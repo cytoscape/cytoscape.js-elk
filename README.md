@@ -1,8 +1,6 @@
 cytoscape-elk
 ================================================================================
 
-[![DOI](https://zenodo.org/badge/82093643.svg)](https://zenodo.org/badge/latestdoi/82093643)
-
 ## Description
 
 The [elk](https://github.com/OpenKieler/elkjs) layout algorithm adapter for Cytoscape.js ([demo](https://cytoscape.github.io/cytoscape-elk.js))
@@ -103,4 +101,3 @@ This project is set up to automatically be published to npm and bower.  To publi
 4. Push to origin: `git push && git push --tags`
 5. Publish to npm: `npm publish .`
 6. If publishing to bower for the first time, you'll need to run `bower register cytoscape-elk https://github.com/cytoscape/cytoscape.js-elk.git`
-7. [Make a new release](https://github.com/cytoscape/cytoscape.js-elk/releases/new) for Zenodo.
