@@ -7,7 +7,6 @@
     "name": "John Stephenson"
   },
   "scripts": {
-    "postpublish": "run-s gh-pages:demo gh-pages:deploy gh-pages:clean",
     "gh-pages:demo": "cpy demo.html . --rename=index.html",
     "gh-pages:deploy": "gh-pages -d . -v node_modules/**",
     "gh-pages:clean": "rimraf index.html",
