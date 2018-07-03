@@ -1,13 +1,13 @@
 {
-  "name": "cytoscape-klay",
-  "description": "The Klay layout algorithm for Cytoscape.js",
-  "main": "cytoscape-klay.js",
+  "name": "cytoscape-elk",
+  "description": "The ELK layout algorithm for Cytoscape.js",
+  "main": "cytoscape-elk.js",
   "dependencies": {
     "cytoscape": "^3.2.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/cytoscape/cytoscape.js-klay.git"
+    "url": "https://github.com/cytoscape/cytoscape.js-elk.git"
   },
   "ignore": [
     "**/.*",

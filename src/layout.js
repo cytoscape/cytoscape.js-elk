@@ -1,90 +1,36 @@
-const klay = require('klayjs');
+//const ELK = require('elkjs');
+  // eslint-disable-next-line no-undef
+const elk = new ELK();
 const assign = require('./assign');
 const defaults = require('./defaults');
 
-const klayNSLookup = {
-  'addUnnecessaryBendpoints': 'de.cau.cs.kieler.klay.layered.unnecessaryBendpoints',
-  'alignment': 'de.cau.cs.kieler.alignment',
-  'aspectRatio': 'de.cau.cs.kieler.aspectRatio',
-  'borderSpacing': 'borderSpacing',
-  'compactComponents': 'de.cau.cs.kieler.klay.layered.components.compact',
-  'compactionStrategy': 'de.cau.cs.kieler.klay.layered.nodeplace.compactionStrategy',
-  'contentAlignment': 'de.cau.cs.kieler.klay.layered.contentAlignment',
-  'crossingMinimization': 'de.cau.cs.kieler.klay.layered.crossMin',
-  'cycleBreaking': 'de.cau.cs.kieler.klay.layered.cycleBreaking',
-  'debugMode': 'de.cau.cs.kieler.debugMode',
-  'direction': 'de.cau.cs.kieler.direction',
-  'edgeLabelSideSelection': 'de.cau.cs.kieler.klay.layered.edgeLabelSideSelection',
-  // <broken> 'de.cau.cs.kieler.klay.layered.edgeNodeSpacingFactor': options.edgeNodeSpacingFactor,
-  'edgeRouting': 'de.cau.cs.kieler.edgeRouting',
-  'edgeSpacingFactor': 'de.cau.cs.kieler.klay.layered.edgeSpacingFactor',
-  'feedbackEdges': 'de.cau.cs.kieler.klay.layered.feedBackEdges',
-  'fixedAlignment': 'de.cau.cs.kieler.klay.layered.fixedAlignment',
-  'greedySwitchCrossingMinimization': 'de.cau.cs.kieler.klay.layered.greedySwitch',
-  'hierarchyHandling': 'de.cau.cs.kieler.hierarchyHandling',
-  'inLayerSpacingFactor': 'de.cau.cs.kieler.klay.layered.inLayerSpacingFactor',
-  'interactiveReferencePoint': 'de.cau.cs.kieler.klay.layered.interactiveReferencePoint',
-  'layerConstraint': 'de.cau.cs.kieler.klay.layered.layerConstraint',
-  'layoutHierarchy': 'de.cau.cs.kieler.layoutHierarchy',
-  'linearSegmentsDeflectionDampening': 'de.cau.cs.kieler.klay.layered.linearSegmentsDeflectionDampening',
-  'mergeEdges': 'de.cau.cs.kieler.klay.layered.mergeEdges',
-  'mergeHierarchyCrossingEdges': 'de.cau.cs.kieler.klay.layered.mergeHierarchyEdges',
-  'noLayout': 'de.cau.cs.kieler.noLayout',
-  'nodeLabelPlacement': 'de.cau.cs.kieler.nodeLabelPlacement',
-  'nodeLayering': 'de.cau.cs.kieler.klay.layered.nodeLayering',
-  'nodePlacement': 'de.cau.cs.kieler.klay.layered.nodePlace',
-  'portAlignment': 'de.cau.cs.kieler.portAlignment',
-  'portAlignmentEastern': 'de.cau.cs.kieler.portAlignment.east',
-  'portAlignmentNorth': 'de.cau.cs.kieler.portAlignment.north',
-  'portAlignmentSouth': 'de.cau.cs.kieler.portAlignment.south',
-  'portAlignmentWest': 'de.cau.cs.kieler.portAlignment.west',
-  'portConstraints': 'de.cau.cs.kieler.portConstraints',
-  'portLabelPlacement': 'de.cau.cs.kieler.portLabelPlacement',
-  'portOffset': 'de.cau.cs.kieler.offset',
-  'portSide': 'de.cau.cs.kieler.portSide',
-  'portSpacing': 'de.cau.cs.kieler.portSpacing',
-  'postCompaction': 'de.cau.cs.kieler.klay.layered.postCompaction',
-  'priority': 'de.cau.cs.kieler.priority',
-  'randomizationSeed': 'de.cau.cs.kieler.randomSeed',
-  'routeSelfLoopInside': 'de.cau.cs.kieler.selfLoopInside',
-  'separateConnectedComponents': 'de.cau.cs.kieler.separateConnComp',
-  'sizeConstraint': 'de.cau.cs.kieler.sizeConstraint',
-  'sizeOptions': 'de.cau.cs.kieler.sizeOptions',
-  'spacing': 'de.cau.cs.kieler.spacing',
-  'splineSelfLoopPlacement': 'de.cau.cs.kieler.klay.layered.splines.selfLoopPlacement',
-  'thoroughness': 'de.cau.cs.kieler.klay.layered.thoroughness',
-  'wideNodesOnMultipleLayers': 'de.cau.cs.kieler.klay.layered.wideNodesOnMultipleLayers'
-};
-
-const mapToKlayNS = function( klayOpts ){
-  let keys = Object.keys( klayOpts );
+const mapToElkNS = function( elkOpts ){
+  let keys = Object.keys( elkOpts );
   let ret = {};
 
   for( let i = 0; i < keys.length; i++ ){
     let key = keys[i];
-    let nsKey = klayNSLookup[key];
-    let val = klayOpts[key];
-
+    let nsKey = key;
+    let val = elkOpts[key];
     ret[ nsKey ] = val;
   }
 
   return ret;
 };
 
-const klayOverrides = {
-  interactiveReferencePoint: 'CENTER', // Determines which point of a node is considered by interactive layout phases.
+const elkOverrides = {
 };
 
 const getPos = function( ele ){
   let parent = ele.parent();
-  let k = ele.scratch('klay');
+  let k = ele.scratch('elk');
   let p = {
     x: k.x,
     y: k.y
   };
 
   if( parent.nonempty() ){
-    let kp = parent.scratch('klay');
+    let kp = parent.scratch('elk');
 
     p.x += kp.x;
     p.y += kp.y;
@@ -113,7 +59,7 @@ const makeNode = function( node, options ){
     k.height = dims.h;
   }
 
-  node.scratch('klay', k);
+  node.scratch('elk', k);
 
   return k;
 };
@@ -126,21 +72,21 @@ const makeEdge = function( edge, options ){
     target: edge.data('target')
   };
 
-  let priority = options.priority( edge );
+  let priority = options.priority && options.priority( edge );
 
   if( priority != null ){
     k.priority = priority;
   }
 
-  edge.scratch('klay', k);
+  edge.scratch('elk', k);
 
   return k;
 };
 
 const makeGraph = function( nodes, edges, options ){
-  let klayNodes = [];
-  let klayEdges = [];
-  let klayEleLookup = {};
+  let elkNodes = [];
+  let elkEdges = [];
+  let elkEleLookup = {};
   let graph = {
     id: 'root',
     children: [],
@@ -152,9 +98,9 @@ const makeGraph = function( nodes, edges, options ){
     let n = nodes[i];
     let k = makeNode( n, options );
 
-    klayNodes.push( k );
+    elkNodes.push( k );
 
-    klayEleLookup[ n.id() ] = k;
+    elkEleLookup[ n.id() ] = k;
   }
 
   // map all edges
@@ -162,21 +108,21 @@ const makeGraph = function( nodes, edges, options ){
     let e = edges[i];
     let k = makeEdge( e, options );
 
-    klayEdges.push( k );
+    elkEdges.push( k );
 
-    klayEleLookup[ e.id() ] = k;
+    elkEleLookup[ e.id() ] = k;
   }
 
   // make hierarchy
-  for( let i = 0; i < klayNodes.length; i++ ){
-    let k = klayNodes[i];
+  for( let i = 0; i < elkNodes.length; i++ ){
+    let k = elkNodes[i];
     let n = k._cyEle;
 
     if( !n.isChild() ){
       graph.children.push( k );
     } else {
       let parent = n.parent();
-      let parentK = klayEleLookup[ parent.id() ];
+      let parentK = elkEleLookup[ parent.id() ];
 
       let children = parentK.children = parentK.children || [];
 
@@ -184,38 +130,37 @@ const makeGraph = function( nodes, edges, options ){
     }
   }
 
-  for( let i = 0; i < klayEdges.length; i++ ){
-    let k = klayEdges[i];
-    let e = k._cyEle;
-    let parentSrc = e.source().parent();
-    let parentTgt = e.target().parent();
+  for( let i = 0; i < elkEdges.length; i++ ){
+    let k = elkEdges[i];
 
     // put all edges in the top level for now
     // TODO does this cause issues in certain edgecases?
-    if( false && parentSrc.nonempty() && parentTgt.nonempty() && parentSrc.same( parentTgt ) ){
-      let kp = klayEleLookup[ parentSrc.id() ];
+    /*let e = k._cyEle;
+    let parentSrc = e.source().parent();
+    let parentTgt = e.target().parent();
+    if ( false && parentSrc.nonempty() && parentTgt.nonempty() && parentSrc.same( parentTgt ) ){
+      let kp = elkEleLookup[ parentSrc.id() ];
 
       kp.edges = kp.edges || [];
 
       kp.edges.push( k );
-    } else {
-      graph.edges.push( k );
-    }
-
+    } else {*/
+    graph.edges.push( k );
+    //}
   }
 
   return graph;
 };
 
 function Layout( options ){
-  let klayOptions = options.klay;
+  let elkOptions = options.elk;
 
   this.options = assign( {}, defaults, options );
 
-  this.options.klay = assign( {}, defaults.klay, klayOptions, klayOverrides );
+  this.options.elk = assign( {}, defaults.elk, elkOptions, elkOverrides );
 }
 
-Layout.prototype.run = function(){
+Layout.prototype.run = function() {
   let layout = this;
   let options = this.options;
 
@@ -225,19 +170,13 @@ Layout.prototype.run = function(){
 
   let graph = makeGraph( nodes, edges, options );
 
-  klay.layout({
-    graph: graph,
-    options: mapToKlayNS( options.klay ),
-    success: function () {
-    },
-    error: function(error){
-      throw error;
-    }
+  elk.layout(graph, {
+      layoutOptions: mapToElkNS( options.elk )
+    }).then(() => {
+    nodes.filter(function(n){
+      return !n.isParent();
+    }).layoutPositions( layout, options, getPos );
   });
-
-  nodes.filter(function(n){
-    return !n.isParent();
-  }).layoutPositions( layout, options, getPos );
 
   return this;
 };

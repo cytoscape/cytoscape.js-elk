@@ -23,11 +23,11 @@ let config = {
     ]
   },
   externals: PROD ? {
-    'klayjs': {
-      commonjs: 'klayjs',
-      commonjs2: 'klayjs',
-      amd: 'klayjs',
-      root: '$klay'
+    'elkjs': {
+      commonjs: 'elkjs',
+      commonjs2: 'elkjs',
+      amd: 'elkjs',
+      root: '$elk'
     }
   } : [],
   plugins: MIN ? [

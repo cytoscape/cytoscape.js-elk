@@ -1,10 +1,10 @@
 {
-  "name": "cytoscape-klay",
-  "version": "3.1.1",
-  "description": "The Klay layout algorithm for Cytoscape.js",
-  "main": "cytoscape-klay.js",
+  "name": "cytoscape-elk",
+  "version": "1.0.0",
+  "description": "The ELK layout algorithm adapter for Cytoscape.js",
+  "main": "cytoscape-elk.js",
   "author": {
-    "name": "Cytoscape Consortium"
+    "name": "John Stephenson"
   },
   "scripts": {
     "postpublish": "run-s gh-pages:demo gh-pages:deploy gh-pages:clean",
@@ -22,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/cytoscape/cytoscape.js-klay.git"
+    "url": "https://github.com/cytoscape/cytoscape-elk.js.git"
   },
   "keywords": [
     "cytoscape",
@@ -30,9 +30,9 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/cytoscape/cytoscape.js-klay/issues"
+    "url": "https://github.com/cytoscape/cytoscape-elk.js/issues"
   },
-  "homepage": "https://github.com/cytoscape/cytoscape.js-klay",
+  "homepage": "https://github.com/cytoscape/cytoscape-elk.js",
   "devDependencies": {
     "babel-core": "^6.24.1",
     "babel-loader": "^7.0.0",
@@ -55,6 +55,8 @@
     "cytoscape": "^3.2.0"
   },
   "dependencies": {
-    "klayjs": "^0.4.1"
+    "clean": "^4.0.2",
+    "elkjs": "^0.3.0",
+    "webworker-threads": "^0.7.16"
   }
 }

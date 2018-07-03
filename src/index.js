@@ -4,10 +4,11 @@ const impl = require('./layout');
 let register = function( cytoscape ){
   if( !cytoscape ){ return; } // can't register if cytoscape unspecified
 
-  cytoscape( 'layout', 'klay', impl ); // register with cytoscape.js
+  cytoscape( 'layout', 'elk', impl ); // register with cytoscape.js
 };
 
 if( typeof cytoscape !== 'undefined' ){ // expose to global cytoscape (i.e. window.cytoscape)
+  // eslint-disable-next-line no-undef
   register( cytoscape );
 }
 

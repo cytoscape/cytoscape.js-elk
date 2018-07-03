@@ -1,92 +1,200 @@
 <!DOCTYPE>
-
 <html>
+<head>
+	<title>cytoscape-elk.js demo</title>
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
 
-	<head>
-		<title>cytoscape-klay.js demo</title>
+	<!-- the demo uses fetch() -->
+	<script src="https://unpkg.com/bluebird@3.5.1/js/browser/bluebird.js"></script>
+	<script src="https://unpkg.com/whatwg-fetch@2.0.3/fetch.js"></script>
 
-		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+	<script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
 
-		<!-- the demo uses fetch() -->
-		<script src="https://unpkg.com/bluebird@3.5.1/js/browser/bluebird.js"></script>
-		<script src="https://unpkg.com/whatwg-fetch@2.0.3/fetch.js"></script>
+	<!-- for testing with local version of cytoscape.js -->
+	<!--<script src="../cytoscape.js/build/cytoscape.js"></script>-->
 
-		<script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.10/lodash.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/elkjs@0.3.0/lib/elk.bundled.js"></script>
+	<script src="cytoscape-elk.js"></script>
 
-		<!-- for testing with local version of cytoscape.js -->
-		<!--<script src="../cytoscape.js/build/cytoscape.js"></script>-->
+	<style>
+		body {
+			font-family: helvetica neue, helvetica, liberation sans, arial, sans-serif;
+			font-size: 14px;
+		}
 
-		<script src="https://unpkg.com/klayjs@0.4.1/klay.js"></script>
-		<script src="cytoscape-klay.js"></script>
+		#cy {
+			position: absolute;
+			left: 0;
+			top: 0;
+			bottom: 0;
+			right: 0;
+			z-index: 999;
+		}
 
-		<style>
-			body {
-				font-family: helvetica neue, helvetica, liberation sans, arial, sans-serif;
-				font-size: 14px;
+		h1 {
+			opacity: 0.5;
+			font-size: 1em;
+			font-weight: bold;
+		}
+	</style>
+
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			let cyLayout;
+			function addOrphans() {
+				let count = 1;
+				setInterval(() => {
+					let newNode = createNode((1000 + count) + '', 'orphan' + count, 3);
+					nodes.push(newNode);
+					cy.add(_.defaults({ group: 'nodes' }, newNode));
+					refreshLayout();
+
+					count++;
+				}, 2000);
 			}
 
-			#cy {
-				position: absolute;
-				left: 0;
-				top: 0;
-				bottom: 0;
-				right: 0;
-				z-index: 999;
+			function createNode(id, name, age, childIds) {
+				childIds = childIds || [];
+				return {
+					data: {
+						id: id,
+						name: name,
+						age: age,
+						childIds: childIds,
+						parentIds: []
+					}
+				};
 			}
 
-			h1 {
-				opacity: 0.5;
-				font-size: 1em;
-				font-weight: bold;
+			function generateLinks(nodes) {
+				let links = [];
+				_.forEach(nodes, (parentNode) => {
+					_.forEach(parentNode.data.childIds, (childNodeId) => {
+						links.push({
+							data: {
+								source: parentNode.data.id,
+								target: childNodeId,
+								bendPoints: []
+							},
+							bendPoints: []
+						});
+					});
+				});
+				return links;
 			}
-		</style>
 
-		<script>
-			document.addEventListener('DOMContentLoaded', function(){
+			function refreshLayout(initial) {
+				nodesMapById = _.keyBy(nodes, 'data.id');
+				if (cyLayout) {
+					cyLayout.stop();
+				}
 
-				var cy = window.cy = cytoscape({
-					container: document.getElementById('cy'),
+				if (initial) {
+					cy.json({
+						elements: {
+							nodes: nodes,
+							edges: links
+						}
+					});
 
-					// demo your layout
-					layout: {
-						name: 'klay',
+					cyLayout = cy.layout(layoutOptions);
+				}
+				else {
+					layoutOptions.fit = false;
+					cyLayout = cy.elements().makeLayout(layoutOptions);
+				}
 
-						// some more options here...
+				cyLayout.run();
+			}
+
+
+			var nodes = [
+				createNode('1', 'child1-1-1', 12),
+				createNode('2', 'child1-2-1', 13),
+				createNode('3', 'child1-2-2', 14),
+				createNode('4', 'child1-2-3', 15),
+				createNode('11', 'child1-1-1', 12),
+				createNode('12', 'child1-2-1', 13),
+				createNode('13', 'child1-2-2', 14),
+				createNode('14', 'child1-2-3', 15),
+				createNode('15', 'child2-1-1', 9),
+				createNode('16', 'parent1-1', 45, ['11']),
+				createNode('17', 'parent1-2', 20, ['12', '13', '14']),
+				createNode('19', 'grandparent1', 74, ['16', '17']),
+				createNode('6', 'parent1-1', 45, ['1', '11']),
+				createNode('7', 'parent1-2', 20, ['2', '3', '4']),
+				createNode('9', 'grandparent1', 74, ['6', '7']),
+				createNode('18', 'parent2-1', 33, ['15']),
+				createNode('110', 'grandparent2', 66, ['18']),
+				createNode('21', 'child1-1-1', 12),
+				createNode('22', 'child1-2-1', 13),
+				createNode('23', 'child1-2-2', 14),
+				createNode('24', 'child1-2-3', 15),
+				createNode('25', 'child2-1-1', 9),
+				createNode('26', 'parent1-1', 45, ['21']),
+				createNode('27', 'parent1-2', 20, ['22', '23', '24']),
+				createNode('28', 'parent2-1', 33, ['25']),
+				createNode('29', 'grandparent1', 74, ['26', '27']),
+				createNode('210', 'grandparent2', 66, ['28']),
+			];
+
+			var links = generateLinks(nodes);
+
+			let elements = {
+				nodes: nodes,
+				edges: links
+			};
+
+
+			let layoutOptions = {
+				name: 'elk',
+				fit: true,
+				ranker: 'longest-path',
+				animate: true,
+				animationDuration: 300,
+				animationEasing: 'ease-in-out-cubic',
+				elk: {
+					'zoomToFit': true,
+					'algorithm': 'mrtree',
+					'separateConnectedComponents': false
+				}
+			};
+
+			var cy = window.cy = cytoscape({
+				container: document.getElementById('cy'),
+				layout: undefined,
+				style: [
+					{
+						selector: 'node',
+						style: {
+							'background-color': '#dd4de2'
+						}
 					},
 
-					style: [
-						{
-							selector: 'node',
-							style: {
-								'background-color': '#dd4de2'
-							}
-						},
-
-						{
-							selector: 'edge',
-							style: {
-								'curve-style': 'bezier',
-								'target-arrow-shape': 'triangle',
-								'line-color': '#dd4de2',
-								'target-arrow-color': '#dd4de2',
-								'opacity': 0.5
-							}
+					{
+						selector: 'edge',
+						style: {
+							'curve-style': 'bezier',
+							'target-arrow-shape': 'triangle',
+							'line-color': '#dd4de2',
+							'target-arrow-color': '#dd4de2',
+							'opacity': 0.5
 						}
-					],
+					}
+				],
 
-					elements: fetch('./example-graphs/planar-chain.json').then(function( res ){ return res.json(); })
-				});
-
-
+				elements: elements
 			});
-		</script>
-	</head>
+			refreshLayout(true);
+			addOrphans();
+		});
+	</script>
+</head>
 
-	<body>
-		<h1>cytoscape-klay demo</h1>
-
-		<div id="cy"></div>
-
-	</body>
+<body>
+	<h1>cytoscape-elk demo</h1>
+	<div id="cy"></div>
+</body>
 
 </html>
