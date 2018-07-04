@@ -1,5 +1,5 @@
-//const ELK = require('elkjs');
-  // eslint-disable-next-line no-undef
+const ELK = require('elkjs');
+// eslint-disable-next-line no-undef
 const elk = new ELK();
 const assign = require('./assign');
 const defaults = require('./defaults');

@@ -27,7 +27,7 @@ let config = {
       commonjs: 'elkjs',
       commonjs2: 'elkjs',
       amd: 'elkjs',
-      root: '$elk'
+      root: 'ELK'
     }
   } : [],
   plugins: MIN ? [

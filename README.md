@@ -100,4 +100,4 @@ This project is set up to automatically be published to npm and bower.  To publi
 3. Bump the version number and tag: `npm version major|minor|patch`
 4. Push to origin: `git push && git push --tags`
 5. Publish to npm: `npm publish .`
-6. If publishing to bower for the first time, you'll need to run `bower register cytoscape-elk https://github.com/cytoscape/cytoscape.js-elk.git`
+6. If publishing to bower for the first time, you'll need to run `bower register cytoscape-elk https://github.com/jfstephe/cytoscape.js-elk.git`

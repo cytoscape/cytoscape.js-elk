@@ -1,13 +1,13 @@
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
-		module.exports = factory();
+		module.exports = factory(require("elkjs"));
 	else if(typeof define === 'function' && define.amd)
-		define([], factory);
+		define(["elkjs"], factory);
 	else if(typeof exports === 'object')
-		exports["cytoscapeElk"] = factory();
+		exports["cytoscapeElk"] = factory(require("elkjs"));
 	else
-		root["cytoscapeElk"] = factory();
-})(this, function() {
+		root["cytoscapeElk"] = factory(root["ELK"]);
+})(this, function(__WEBPACK_EXTERNAL_MODULE_4__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -83,7 +83,7 @@ return /******/ (function(modules) { // webpackBootstrap
 "use strict";
 
 
-//const ELK = require('elkjs');
+var ELK = __webpack_require__(4);
 // eslint-disable-next-line no-undef
 var elk = new ELK();
 var assign = __webpack_require__(1);
@@ -351,6 +351,12 @@ if (typeof cytoscape !== 'undefined') {
 }
 
 module.exports = register;
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports) {
+
+module.exports = __WEBPACK_EXTERNAL_MODULE_4__;
 
 /***/ })
 /******/ ]);
