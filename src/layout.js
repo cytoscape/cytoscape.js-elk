@@ -46,6 +46,7 @@ const makeNode = function( node, options ){
     _cyEle: node,
     id: node.id(),
     ports: node.data().ports,
+    properties: node.data().properties,
     padding: {
       top: padding,
       left: padding,
@@ -61,6 +62,7 @@ const makeNode = function( node, options ){
 
   node.scratch('elk', k);
 
+  console.log('NODE: ', k);
   return k;
 };
 
@@ -69,9 +71,7 @@ const makeEdge = function( edge, options ){
     _cyEle: edge,
     id: edge.id(),
     source: edge.data('source'),
-    target: edge.data('target'),
-    sourcePort: edge.data('sourcePort'),
-    targetPort: edge.data('targetPort')
+    target: edge.data('target')
   };
 
   let priority = options.priority && options.priority( edge );
