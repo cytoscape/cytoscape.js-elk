@@ -130,6 +130,7 @@ var makeNode = function makeNode(node, options) {
     _cyEle: node,
     id: node.id(),
     ports: node.data().ports,
+    properties: node.data().properties,
     padding: {
       top: padding,
       left: padding,
@@ -145,6 +146,7 @@ var makeNode = function makeNode(node, options) {
 
   node.scratch('elk', k);
 
+  console.log('NODE: ', k);
   return k;
 };
 
@@ -153,9 +155,7 @@ var makeEdge = function makeEdge(edge, options) {
     _cyEle: edge,
     id: edge.id(),
     source: edge.data('source'),
-    target: edge.data('target'),
-    sourcePort: edge.data('sourcePort'),
-    targetPort: edge.data('targetPort')
+    target: edge.data('target')
   };
 
   var priority = options.priority && options.priority(edge);
