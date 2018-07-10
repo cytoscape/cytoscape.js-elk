@@ -84,7 +84,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 var ELK = __webpack_require__(4);
-// eslint-disable-next-line no-undef
 var elk = new ELK();
 var assign = __webpack_require__(1);
 var defaults = __webpack_require__(2);
@@ -130,6 +129,7 @@ var makeNode = function makeNode(node, options) {
   var k = {
     _cyEle: node,
     id: node.id(),
+    ports: node.data().ports,
     padding: {
       top: padding,
       left: padding,
@@ -153,7 +153,9 @@ var makeEdge = function makeEdge(edge, options) {
     _cyEle: edge,
     id: edge.id(),
     source: edge.data('source'),
-    target: edge.data('target')
+    target: edge.data('target'),
+    sourcePort: edge.data('sourcePort'),
+    targetPort: edge.data('targetPort')
   };
 
   var priority = options.priority && options.priority(edge);

@@ -28,7 +28,7 @@ let config = {
       commonjs2: 'elkjs',
       amd: 'elkjs',
       root: 'ELK'
-    }
+    },
   } : [],
   plugins: MIN ? [
     new webpack.optimize.UglifyJsPlugin({

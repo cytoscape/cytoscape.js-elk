@@ -1,5 +1,4 @@
 const ELK = require('elkjs');
-// eslint-disable-next-line no-undef
 const elk = new ELK();
 const assign = require('./assign');
 const defaults = require('./defaults');
@@ -46,6 +45,7 @@ const makeNode = function( node, options ){
   let k = {
     _cyEle: node,
     id: node.id(),
+    ports: node.data().ports,
     padding: {
       top: padding,
       left: padding,
@@ -69,7 +69,9 @@ const makeEdge = function( edge, options ){
     _cyEle: edge,
     id: edge.id(),
     source: edge.data('source'),
-    target: edge.data('target')
+    target: edge.data('target'),
+    sourcePort: edge.data('sourcePort'),
+    targetPort: edge.data('targetPort')
   };
 
   let priority = options.priority && options.priority( edge );
