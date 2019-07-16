@@ -1,5 +1,7 @@
-const ELK = require('elkjs');
-const elk = new ELK();
+const ELK = require('elkjs/lib/elk-api');
+const elk = new ELK({
+  workerUrl: false,
+});
 const assign = require('./assign');
 const defaults = require('./defaults');
 
