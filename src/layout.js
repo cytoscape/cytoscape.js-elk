@@ -1,7 +1,5 @@
-const ELK = require('elkjs/lib/elk-api');
-const elk = new ELK({
-  workerUrl: 'elkjs/lib/elk-worker',
-});
+const ELK = require('elkjs');
+const elk = new ELK();
 const assign = require('./assign');
 const defaults = require('./defaults');
 
@@ -64,7 +62,6 @@ const makeNode = function( node, options ){
 
   node.scratch('elk', k);
 
-  console.log('NODE: ', k);
   return k;
 };
 
