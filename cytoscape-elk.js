@@ -85,7 +85,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 var ELK = __webpack_require__(4);
 var elk = new ELK({
-  workerUrl: false
+  workerUrl: 'elkjs/lib/elk-worker'
 });
 var assign = __webpack_require__(1);
 var defaults = __webpack_require__(2);
