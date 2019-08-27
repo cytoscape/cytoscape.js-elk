@@ -55,7 +55,6 @@
   },
   "dependencies": {
     "clean": "^4.0.2",
-    "elkjs": "^0.3.0",
-    "webworker-threads": "^0.7.16"
+    "elkjs": "^0.3.0"
   }
 }

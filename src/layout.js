@@ -62,7 +62,6 @@ const makeNode = function( node, options ){
 
   node.scratch('elk', k);
 
-  console.log('NODE: ', k);
   return k;
 };
 
