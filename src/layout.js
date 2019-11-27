@@ -1,4 +1,4 @@
-const ELK = require('elkjs');
+const ELK = require('elkjs/lib/elk.bundled.js'');
 const elk = new ELK();
 const assign = require('./assign');
 const defaults = require('./defaults');
