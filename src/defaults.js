@@ -9,7 +9,7 @@ let defaults = {
   transform: function( node, pos ){ return pos; }, // A function that applies a transform to the final node position
   ready: undefined, // Callback on layoutready
   stop: undefined, // Callback on layoutstop
-  elk: {
+  elk: { // Options to pass directly to ELK
   },
   priority: function(){ return null; }, // Edges with a non-nil value are skipped when geedy edge cycle breaking is enabled
 };

@@ -3,20 +3,6 @@ const elk = new ELK();
 const assign = require('./assign');
 const defaults = require('./defaults');
 
-const mapToElkNS = function( elkOpts ){
-  let keys = Object.keys( elkOpts );
-  let ret = {};
-
-  for( let i = 0; i < keys.length; i++ ){
-    let key = keys[i];
-    let nsKey = key;
-    let val = elkOpts[key];
-    ret[ nsKey ] = val;
-  }
-
-  return ret;
-};
-
 const elkOverrides = {
 };
 
@@ -45,8 +31,8 @@ const makeNode = function( node, options ){
   let k = {
     _cyEle: node,
     id: node.id(),
-    ports: node.data().ports,
-    properties: node.data().properties,
+    ports: node.data().ports, // TODO documented??
+    properties: node.data().properties, // TODO documented??
     padding: {
       top: padding,
       left: padding,
@@ -72,12 +58,6 @@ const makeEdge = function( edge, options ){
     source: edge.data('source'),
     target: edge.data('target')
   };
-
-  let priority = options.priority && options.priority( edge );
-
-  if( priority != null ){
-    k.priority = priority;
-  }
 
   edge.scratch('elk', k);
 
@@ -172,8 +152,8 @@ Layout.prototype.run = function() {
   let graph = makeGraph( nodes, edges, options );
 
   elk.layout(graph, {
-      layoutOptions: mapToElkNS( options.elk )
-    }).then(() => {
+    layoutOptions: options.elk
+  }).then(() => {
     nodes.filter(function(n){
       return !n.isParent();
     }).layoutPositions( layout, options, getPos );
