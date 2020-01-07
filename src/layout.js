@@ -156,9 +156,6 @@ Layout.prototype.run = function() {
   const elk = new ELK();
   const graph = makeGraph( nodes, edges, options );
 
-  elk.knownLayoutAlgorithms().then(console.log)
-  elk.knownLayoutOptions().then(console.log)
-
   elk.layout(graph, {
     layoutOptions: options.elk
   }).then(() => {
