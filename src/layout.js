@@ -6,9 +6,11 @@ const defaults = require('./defaults');
 const elkOverrides = {
 };
 
-const getPos = function( ele ){
+const getPos = function( ele, options ){
+  const dims = ele.layoutDimensions( options );
   let parent = ele.parent();
   let k = ele.scratch('elk');
+
   let p = {
     x: k.x,
     y: k.y
@@ -20,6 +22,10 @@ const getPos = function( ele ){
     p.x += kp.x;
     p.y += kp.y;
   }
+
+  // elk considers a node position to be its top-left corner, while cy is the centre
+  p.x += dims.w/2;
+  p.y += dims.h/2;
 
   return p;
 };
