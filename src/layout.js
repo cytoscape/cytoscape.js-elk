@@ -31,23 +31,19 @@ const getPos = function( ele, options ){
 };
 
 const makeNode = function( node, options ){
-  let dims = node.layoutDimensions( options );
-  let padding = node.numericStyle('padding');
-
-  let k = {
+  const k = {
     _cyEle: node,
-    id: node.id(),
-    ports: node.data().ports, // TODO documented??
-    properties: node.data().properties, // TODO documented??
-    padding: {
-      top: padding,
-      left: padding,
-      bottom: padding,
-      right: padding
-    }
+    id: node.id()
   };
 
   if( !node.isParent() ){
+    const dims = node.layoutDimensions( options );
+    const p = node.position();
+
+    // the elk position is the top-left corner, cy is the centre
+    k.x = p.x - dims.w/2;
+    k.y = p.y - dims.h/2;
+
     k.width = dims.w;
     k.height = dims.h;
   }
