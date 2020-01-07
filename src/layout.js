@@ -1,5 +1,4 @@
 const ELK = require('elkjs');
-const elk = new ELK();
 const assign = require('./assign');
 const defaults = require('./defaults');
 
@@ -53,7 +52,7 @@ const makeNode = function( node, options ){
   return k;
 };
 
-const makeEdge = function( edge, options ){
+const makeEdge = function( edge /*, options*/ ){
   let k = {
     _cyEle: edge,
     id: edge.id(),
@@ -136,29 +135,34 @@ const makeGraph = function( nodes, edges, options ){
 };
 
 function Layout( options ){
-  let elkOptions = options.elk;
+  const elkOptions = options.elk;
+  const cy = options.cy;
 
   this.options = assign( {}, defaults, options );
 
-  this.options.elk = assign( {}, defaults.elk, elkOptions, elkOverrides );
+  this.options.elk = assign( {
+    aspectRatio: cy.width() / cy.height()
+  }, defaults.elk, elkOptions, elkOverrides );
 }
 
 Layout.prototype.run = function() {
-  let layout = this;
-  let options = this.options;
+  const layout = this;
+  const options = this.options;
 
-  let eles = options.eles;
-  let nodes = eles.nodes();
-  let edges = eles.edges();
+  const eles = options.eles;
+  const nodes = eles.nodes();
+  const edges = eles.edges();
 
-  let graph = makeGraph( nodes, edges, options );
+  const elk = new ELK();
+  const graph = makeGraph( nodes, edges, options );
+
+  elk.knownLayoutAlgorithms().then(console.log)
+  elk.knownLayoutOptions().then(console.log)
 
   elk.layout(graph, {
     layoutOptions: options.elk
   }).then(() => {
-    nodes.filter(function(n){
-      return !n.isParent();
-    }).layoutPositions( layout, options, getPos );
+    nodes.filter(n => !n.isParent()).layoutPositions( layout, options, n => getPos(n, options) );
   });
 
   return this;
