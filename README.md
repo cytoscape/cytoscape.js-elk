@@ -17,8 +17,7 @@ The [elk](https://github.com/OpenKieler/elkjs) layout algorithm adapter for Cyto
 ## Usage instructions
 
 Download the library:
- * via npm: `npm install cytoscape-elk`,
- * via bower: `bower install cytoscape-elk`, or
+ * via npm or yarn: `npm install cytoscape-elk` or `yarn add cytoscape-elk`,
  * via direct download in the repository (probably from a tag).
 
 Import the library as appropriate for your project:
@@ -110,11 +109,10 @@ N.b. all builds use babel, so modern ES features can be used in the `src`.
 
 ## Publishing instructions
 
-This project is set up to automatically be published to npm and bower.  To publish:
+This project is set up to automatically be published to npm.  To publish:
 
 1. Build the extension : `npm run build:release`
 2. Commit the build : `git commit -am "Build for release"`
 3. Bump the version number and tag: `npm version major|minor|patch`
 4. Push to origin: `git push && git push --tags`
 5. Publish to npm: `npm publish .`
-6. If publishing to bower for the first time, you'll need to run `bower register cytoscape-elk https://github.com/jfstephe/cytoscape.js-elk.git`
