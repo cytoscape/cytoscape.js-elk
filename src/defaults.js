@@ -9,7 +9,11 @@ let defaults = {
   transform: function( node, pos ){ return pos; }, // A function that applies a transform to the final node position
   ready: undefined, // Callback on layoutready
   stop: undefined, // Callback on layoutstop
-  elk: { // Options to pass directly to ELK
+  elk: { // Options to pass directly to ELK `layoutOptions`
+    // the elk algorithm to use
+    // one of 'box', 'disco', 'force', 'layered', 'mrtree', 'radial', 'random', 'stress'
+    // (see https://www.eclipse.org/elk/reference/algorithms.html)
+    algorithm: undefined
   },
   priority: function(){ return null; }, // Edges with a non-nil value are skipped when geedy edge cycle breaking is enabled
 };
