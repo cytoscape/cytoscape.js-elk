@@ -1,1 +1,1 @@
-../cytoscape-elk.js
+../dist/cytoscape-elk.js

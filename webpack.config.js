@@ -11,8 +11,11 @@ const PROD = NODE_ENV === 'production';
 let config = {
   devtool: PROD ? false : 'inline-source-map',
   entry: './src/index.js',
+  devServer: {
+    publicPath: '/dist/'
+  },
   output: {
-    path: path.join( __dirname ),
+    path: path.join( __dirname, 'dist' ),
     filename: pkg.name + '.js',
     library: camelcase( pkg.name ),
     libraryTarget: 'umd'
