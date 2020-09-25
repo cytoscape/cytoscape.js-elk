@@ -27,12 +27,12 @@ const getPos = function( ele ){
     x: k.x,
     y: k.y
   };
-
-  if( parent.nonempty() ){
-    let kp = parent.scratch('elk');
-
+  
+while (parent.nonempty()) {
+    let kp = parent.scratch('klay');
     p.x += kp.x;
     p.y += kp.y;
+    parent = parent.parent();
   }
 
   return p;
