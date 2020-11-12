@@ -8,7 +8,7 @@
   },
   "scripts": {
     "gh-pages": "gh-pages -d pages",
-    "postpublish": "gh-pages",
+    "postpublish": "gh-pages -d pages",
     "copyright": "update license",
     "lint": "eslint src",
     "build": "cross-env NODE_ENV=production webpack",
@@ -53,7 +53,6 @@
     "cytoscape": "^3.2.0"
   },
   "dependencies": {
-    "clean": "^4.0.2",
     "elkjs": "^0.3.0"
   }
 }
