@@ -23,7 +23,7 @@ let config = {
     ]
   },
   externals: PROD ? {
-    'elkjs': {
+    'elkjs/lib/elk.bundled.js': {
       commonjs: 'elkjs',
       commonjs2: 'elkjs',
       amd: 'elkjs',
