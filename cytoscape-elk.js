@@ -99,11 +99,11 @@ var getPos = function getPos(ele, options) {
     y: k.y
   };
 
-  if (parent.nonempty()) {
-    var kp = parent.scratch('elk');
-
+  while (parent.nonempty()) {
+    var kp = parent.scratch('klay');
     p.x += kp.x;
     p.y += kp.y;
+    parent = parent.parent();
   }
 
   // elk considers a node position to be its top-left corner, while cy is the centre
