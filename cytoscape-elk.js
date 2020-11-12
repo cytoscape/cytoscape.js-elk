@@ -84,29 +84,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 var ELK = __webpack_require__(4);
-var elk = new ELK();
 var assign = __webpack_require__(1);
 var defaults = __webpack_require__(2);
 
-var mapToElkNS = function mapToElkNS(elkOpts) {
-  var keys = Object.keys(elkOpts);
-  var ret = {};
-
-  for (var i = 0; i < keys.length; i++) {
-    var key = keys[i];
-    var nsKey = key;
-    var val = elkOpts[key];
-    ret[nsKey] = val;
-  }
-
-  return ret;
-};
-
 var elkOverrides = {};
 
-var getPos = function getPos(ele) {
+var getPos = function getPos(ele, options) {
+  var dims = ele.layoutDimensions(options);
   var parent = ele.parent();
   var k = ele.scratch('elk');
+
   var p = {
     x: k.x,
     y: k.y
@@ -119,50 +106,43 @@ var getPos = function getPos(ele) {
     p.y += kp.y;
   }
 
+  // elk considers a node position to be its top-left corner, while cy is the centre
+  p.x += dims.w / 2;
+  p.y += dims.h / 2;
+
   return p;
 };
 
 var makeNode = function makeNode(node, options) {
-  var dims = node.layoutDimensions(options);
-  var padding = node.numericStyle('padding');
-
   var k = {
     _cyEle: node,
-    id: node.id(),
-    ports: node.data().ports,
-    properties: node.data().properties,
-    padding: {
-      top: padding,
-      left: padding,
-      bottom: padding,
-      right: padding
-    }
+    id: node.id()
   };
 
   if (!node.isParent()) {
+    var dims = node.layoutDimensions(options);
+    var p = node.position();
+
+    // the elk position is the top-left corner, cy is the centre
+    k.x = p.x - dims.w / 2;
+    k.y = p.y - dims.h / 2;
+
     k.width = dims.w;
     k.height = dims.h;
   }
 
   node.scratch('elk', k);
 
-  console.log('NODE: ', k);
   return k;
 };
 
-var makeEdge = function makeEdge(edge, options) {
+var makeEdge = function makeEdge(edge /*, options*/) {
   var k = {
     _cyEle: edge,
     id: edge.id(),
     source: edge.data('source'),
     target: edge.data('target')
   };
-
-  var priority = options.priority && options.priority(edge);
-
-  if (priority != null) {
-    k.priority = priority;
-  }
 
   edge.scratch('elk', k);
 
@@ -238,10 +218,13 @@ var makeGraph = function makeGraph(nodes, edges, options) {
 
 function Layout(options) {
   var elkOptions = options.elk;
+  var cy = options.cy;
 
   this.options = assign({}, defaults, options);
 
-  this.options.elk = assign({}, defaults.elk, elkOptions, elkOverrides);
+  this.options.elk = assign({
+    aspectRatio: cy.width() / cy.height()
+  }, defaults.elk, elkOptions, elkOverrides);
 }
 
 Layout.prototype.run = function () {
@@ -252,14 +235,17 @@ Layout.prototype.run = function () {
   var nodes = eles.nodes();
   var edges = eles.edges();
 
+  var elk = new ELK();
   var graph = makeGraph(nodes, edges, options);
 
   elk.layout(graph, {
-    layoutOptions: mapToElkNS(options.elk)
+    layoutOptions: options.elk
   }).then(function () {
     nodes.filter(function (n) {
       return !n.isParent();
-    }).layoutPositions(layout, options, getPos);
+    }).layoutPositions(layout, options, function (n) {
+      return getPos(n, options);
+    });
   });
 
   return this;
@@ -320,7 +306,12 @@ var defaults = {
   }, // A function that applies a transform to the final node position
   ready: undefined, // Callback on layoutready
   stop: undefined, // Callback on layoutstop
-  elk: {},
+  elk: { // Options to pass directly to ELK `layoutOptions`
+    // the elk algorithm to use
+    // one of 'box', 'disco', 'force', 'layered', 'mrtree', 'radial', 'random', 'stress'
+    // (see https://www.eclipse.org/elk/reference/algorithms.html)
+    algorithm: undefined
+  },
   priority: function priority() {
     return null;
   } // Edges with a non-nil value are skipped when geedy edge cycle breaking is enabled

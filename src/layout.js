@@ -1,28 +1,15 @@
 const ELK = require('elkjs');
-const elk = new ELK();
 const assign = require('./assign');
 const defaults = require('./defaults');
-
-const mapToElkNS = function( elkOpts ){
-  let keys = Object.keys( elkOpts );
-  let ret = {};
-
-  for( let i = 0; i < keys.length; i++ ){
-    let key = keys[i];
-    let nsKey = key;
-    let val = elkOpts[key];
-    ret[ nsKey ] = val;
-  }
-
-  return ret;
-};
 
 const elkOverrides = {
 };
 
-const getPos = function( ele ){
+const getPos = function( ele, options ){
+  const dims = ele.layoutDimensions( options );
   let parent = ele.parent();
   let k = ele.scratch('elk');
+
   let p = {
     x: k.x,
     y: k.y
@@ -35,27 +22,27 @@ const getPos = function( ele ){
     p.y += kp.y;
   }
 
+  // elk considers a node position to be its top-left corner, while cy is the centre
+  p.x += dims.w/2;
+  p.y += dims.h/2;
+
   return p;
 };
 
 const makeNode = function( node, options ){
-  let dims = node.layoutDimensions( options );
-  let padding = node.numericStyle('padding');
-
-  let k = {
+  const k = {
     _cyEle: node,
-    id: node.id(),
-    ports: node.data().ports,
-    properties: node.data().properties,
-    padding: {
-      top: padding,
-      left: padding,
-      bottom: padding,
-      right: padding
-    }
+    id: node.id()
   };
 
   if( !node.isParent() ){
+    const dims = node.layoutDimensions( options );
+    const p = node.position();
+
+    // the elk position is the top-left corner, cy is the centre
+    k.x = p.x - dims.w/2;
+    k.y = p.y - dims.h/2;
+
     k.width = dims.w;
     k.height = dims.h;
   }
@@ -65,19 +52,13 @@ const makeNode = function( node, options ){
   return k;
 };
 
-const makeEdge = function( edge, options ){
+const makeEdge = function( edge /*, options*/ ){
   let k = {
     _cyEle: edge,
     id: edge.id(),
     source: edge.data('source'),
     target: edge.data('target')
   };
-
-  let priority = options.priority && options.priority( edge );
-
-  if( priority != null ){
-    k.priority = priority;
-  }
 
   edge.scratch('elk', k);
 
@@ -154,29 +135,31 @@ const makeGraph = function( nodes, edges, options ){
 };
 
 function Layout( options ){
-  let elkOptions = options.elk;
+  const elkOptions = options.elk;
+  const cy = options.cy;
 
   this.options = assign( {}, defaults, options );
 
-  this.options.elk = assign( {}, defaults.elk, elkOptions, elkOverrides );
+  this.options.elk = assign( {
+    aspectRatio: cy.width() / cy.height()
+  }, defaults.elk, elkOptions, elkOverrides );
 }
 
 Layout.prototype.run = function() {
-  let layout = this;
-  let options = this.options;
+  const layout = this;
+  const options = this.options;
 
-  let eles = options.eles;
-  let nodes = eles.nodes();
-  let edges = eles.edges();
+  const eles = options.eles;
+  const nodes = eles.nodes();
+  const edges = eles.edges();
 
-  let graph = makeGraph( nodes, edges, options );
+  const elk = new ELK();
+  const graph = makeGraph( nodes, edges, options );
 
   elk.layout(graph, {
-      layoutOptions: mapToElkNS( options.elk )
-    }).then(() => {
-    nodes.filter(function(n){
-      return !n.isParent();
-    }).layoutPositions( layout, options, getPos );
+    layoutOptions: options.elk
+  }).then(() => {
+    nodes.filter(n => !n.isParent()).layoutPositions( layout, options, n => getPos(n, options) );
   });
 
   return this;
