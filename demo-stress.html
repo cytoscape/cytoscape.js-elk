@@ -1,0 +1,74 @@
+<!DOCTYPE>
+<html>
+<head>
+	<title>cytoscape-elk.js demo</title>
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+
+	<!-- the demo uses fetch() -->
+	<script src="https://unpkg.com/bluebird@3.5.1/js/browser/bluebird.js"></script>
+	<script src="https://unpkg.com/whatwg-fetch@2.0.3/fetch.js"></script>
+
+	<script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+
+	<!-- for testing with local version of cytoscape.js -->
+	<!--<script src="../cytoscape.js/build/cytoscape.js"></script>-->
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.10/lodash.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/elkjs@0.3.0/lib/elk.bundled.js"></script>
+	<script src="cytoscape-elk.js"></script>
+
+	<style>
+		body {
+			font-family: helvetica neue, helvetica, liberation sans, arial, sans-serif;
+			font-size: 14px;
+		}
+
+		#cy {
+			position: absolute;
+			left: 0;
+			top: 0;
+			bottom: 0;
+			right: 0;
+			z-index: 999;
+		}
+
+		h1 {
+			opacity: 0.5;
+			font-size: 1em;
+			font-weight: bold;
+		}
+	</style>
+</head>
+
+<body>
+	<h1>cytoscape-elk demo</h1>
+  <div id="cy"></div>
+
+  <script>
+    (function(){
+      var toJson = function(res){
+        return res.json();
+      };
+
+      var cy = window.cy = cytoscape({
+        container: document.getElementById('cy'),
+        elements: fetch('example-graphs/planar-chain.json').then(toJson),
+        layout: {
+          name: 'elk',
+          elk: {
+            algorithm: 'stress'
+          }
+        },
+        style: [
+          {
+            selector: 'edge',
+            style: {
+            }
+          }
+        ]
+      });
+    })();
+  </script>
+</body>
+
+</html>
