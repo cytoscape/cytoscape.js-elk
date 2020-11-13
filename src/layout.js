@@ -7,15 +7,15 @@ const elkOverrides = {};
 const getPos = function (ele, options) {
   const dims = ele.layoutDimensions(options);
   let parent = ele.parent();
-  let k = ele.scratch('elk');
+  const k = ele.scratch('elk');
 
-  let p = {
+  const p = {
     x: k.x,
     y: k.y,
   };
 
   while (parent.nonempty()) {
-    let kp = parent.scratch('klay');
+    const kp = parent.scratch('klay');
     p.x += kp.x;
     p.y += kp.y;
     parent = parent.parent();
@@ -52,7 +52,7 @@ const makeNode = function (node, options) {
 };
 
 const makeEdge = function (edge /*, options*/) {
-  let k = {
+  const k = {
     _cyEle: edge,
     id: edge.id(),
     source: edge.data('source'),
@@ -65,10 +65,10 @@ const makeEdge = function (edge /*, options*/) {
 };
 
 const makeGraph = function (nodes, edges, options) {
-  let elkNodes = [];
-  let elkEdges = [];
-  let elkEleLookup = {};
-  let graph = {
+  const elkNodes = [];
+  const elkEdges = [];
+  const elkEleLookup = {};
+  const graph = {
     id: 'root',
     children: [],
     edges: [],
@@ -76,8 +76,8 @@ const makeGraph = function (nodes, edges, options) {
 
   // map all nodes
   for (let i = 0; i < nodes.length; i++) {
-    let n = nodes[i];
-    let k = makeNode(n, options);
+    const n = nodes[i];
+    const k = makeNode(n, options);
 
     elkNodes.push(k);
 
@@ -86,8 +86,8 @@ const makeGraph = function (nodes, edges, options) {
 
   // map all edges
   for (let i = 0; i < edges.length; i++) {
-    let e = edges[i];
-    let k = makeEdge(e, options);
+    const e = edges[i];
+    const k = makeEdge(e, options);
 
     elkEdges.push(k);
 
@@ -96,23 +96,23 @@ const makeGraph = function (nodes, edges, options) {
 
   // make hierarchy
   for (let i = 0; i < elkNodes.length; i++) {
-    let k = elkNodes[i];
-    let n = k._cyEle;
+    const k = elkNodes[i];
+    const n = k._cyEle;
 
     if (!n.isChild()) {
       graph.children.push(k);
     } else {
-      let parent = n.parent();
-      let parentK = elkEleLookup[parent.id()];
+      const parent = n.parent();
+      const parentK = elkEleLookup[parent.id()];
 
-      let children = (parentK.children = parentK.children || []);
+      const children = (parentK.children = parentK.children || []);
 
       children.push(k);
     }
   }
 
   for (let i = 0; i < elkEdges.length; i++) {
-    let k = elkEdges[i];
+    const k = elkEdges[i];
 
     // put all edges in the top level for now
     // TODO does this cause issues in certain edgecases?
@@ -136,7 +136,7 @@ const makeGraph = function (nodes, edges, options) {
 class Layout {
   constructor(options) {
     const elkOptions = options.elk;
-    const cy = options.cy;
+    const {cy} = options;
 
     this.options = assign({}, defaults, options);
 
@@ -152,9 +152,9 @@ class Layout {
 
   run() {
     const layout = this;
-    const options = this.options;
+    const {options} = this;
 
-    const eles = options.eles;
+    const {eles} = options;
     const nodes = eles.nodes();
     const edges = eles.edges();
 

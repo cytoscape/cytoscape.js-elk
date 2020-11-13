@@ -1,4 +1,4 @@
-let defaults = {
+const defaults = {
   nodeDimensionsIncludeLabels: false, // Boolean which changes whether label dimensions are included when calculating node dimensions
   fit: true, // Whether to fit
   padding: 20, // Padding on fit
