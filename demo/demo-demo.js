@@ -4,8 +4,11 @@ function addOrphans() {
   let count = 1;
   setInterval(() => {
     const newNode = createNode(`${1000 + count}`, `orphan${count}`, 3);
+    if (!newNode.group) {
+      newNode.group = 'nodes';
+    }
     nodes.push(newNode);
-    cy.add(_.defaults({ group: 'nodes' }, newNode));
+    cy.add(newNode);
     refreshLayout();
 
     count++;
@@ -27,8 +30,8 @@ function createNode(id, name, age, childIds) {
 
 function generateLinks(nodes) {
   const links = [];
-  _.forEach(nodes, (parentNode) => {
-    _.forEach(parentNode.data.childIds, (childNodeId) => {
+  nodes.forEach((parentNode) => {
+    parentNode.data.childIds.forEach((childNodeId) => {
       links.push({
         data: {
           source: parentNode.data.id,
