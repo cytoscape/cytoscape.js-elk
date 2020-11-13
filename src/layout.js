@@ -15,7 +15,7 @@ const getPos = function (ele, options) {
   };
 
   while (parent.nonempty()) {
-    const kp = parent.scratch('klay');
+    const kp = parent.scratch('elk');
     p.x += kp.x;
     p.y += kp.y;
     parent = parent.parent();
