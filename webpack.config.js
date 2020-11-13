@@ -12,35 +12,37 @@ let config = {
   devtool: PROD ? false : 'inline-source-map',
   entry: './src/index.js',
   devServer: {
-    publicPath: '/dist/'
+    publicPath: '/dist/',
   },
   output: {
-    path: path.join( __dirname, 'dist' ),
+    path: path.join(__dirname, 'dist'),
     filename: pkg.name + '.js',
-    library: camelcase( pkg.name ),
-    libraryTarget: 'umd'
+    library: camelcase(pkg.name),
+    libraryTarget: 'umd',
   },
   module: {
-    rules: [
-      { test: /\.js$/, exclude: /node_modules/, use: 'babel-loader' }
-    ]
+    rules: [{ test: /\.js$/, exclude: /node_modules/, use: 'babel-loader' }],
   },
-  externals: PROD ? {
-    'elkjs/lib/elk.bundled.js': {
-      commonjs: 'elkjs',
-      commonjs2: 'elkjs',
-      amd: 'elkjs',
-      root: 'ELK'
-    },
-  } : [],
-  plugins: MIN ? [
-    new webpack.optimize.UglifyJsPlugin({
-      compress: {
-        warnings: false,
-        drop_console: false,
+  externals: PROD
+    ? {
+        'elkjs/lib/elk.bundled.js': {
+          commonjs: 'elkjs',
+          commonjs2: 'elkjs',
+          amd: 'elkjs',
+          root: 'ELK',
+        },
       }
-    })
-  ] : []
+    : [],
+  plugins: MIN
+    ? [
+        new webpack.optimize.UglifyJsPlugin({
+          compress: {
+            warnings: false,
+            drop_console: false,
+          },
+        }),
+      ]
+    : [],
 };
 
 module.exports = config;

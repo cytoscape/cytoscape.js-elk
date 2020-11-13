@@ -2,20 +2,19 @@ const ELK = require('elkjs/lib/elk.bundled.js');
 const assign = require('./assign');
 const defaults = require('./defaults');
 
-const elkOverrides = {
-};
+const elkOverrides = {};
 
-const getPos = function( ele, options ){
-  const dims = ele.layoutDimensions( options );
+const getPos = function (ele, options) {
+  const dims = ele.layoutDimensions(options);
   let parent = ele.parent();
   let k = ele.scratch('elk');
 
   let p = {
     x: k.x,
-    y: k.y
+    y: k.y,
   };
-  
-while (parent.nonempty()) {
+
+  while (parent.nonempty()) {
     let kp = parent.scratch('klay');
     p.x += kp.x;
     p.y += kp.y;
@@ -23,25 +22,25 @@ while (parent.nonempty()) {
   }
 
   // elk considers a node position to be its top-left corner, while cy is the centre
-  p.x += dims.w/2;
-  p.y += dims.h/2;
+  p.x += dims.w / 2;
+  p.y += dims.h / 2;
 
   return p;
 };
 
-const makeNode = function( node, options ){
+const makeNode = function (node, options) {
   const k = {
     _cyEle: node,
-    id: node.id()
+    id: node.id(),
   };
 
-  if( !node.isParent() ){
-    const dims = node.layoutDimensions( options );
+  if (!node.isParent()) {
+    const dims = node.layoutDimensions(options);
     const p = node.position();
 
     // the elk position is the top-left corner, cy is the centre
-    k.x = p.x - dims.w/2;
-    k.y = p.y - dims.h/2;
+    k.x = p.x - dims.w / 2;
+    k.y = p.y - dims.h / 2;
 
     k.width = dims.w;
     k.height = dims.h;
@@ -52,12 +51,12 @@ const makeNode = function( node, options ){
   return k;
 };
 
-const makeEdge = function( edge /*, options*/ ){
+const makeEdge = function (edge /*, options*/) {
   let k = {
     _cyEle: edge,
     id: edge.id(),
     source: edge.data('source'),
-    target: edge.data('target')
+    target: edge.data('target'),
   };
 
   edge.scratch('elk', k);
@@ -65,54 +64,54 @@ const makeEdge = function( edge /*, options*/ ){
   return k;
 };
 
-const makeGraph = function( nodes, edges, options ){
+const makeGraph = function (nodes, edges, options) {
   let elkNodes = [];
   let elkEdges = [];
   let elkEleLookup = {};
   let graph = {
     id: 'root',
     children: [],
-    edges: []
+    edges: [],
   };
 
   // map all nodes
-  for( let i = 0; i < nodes.length; i++ ){
+  for (let i = 0; i < nodes.length; i++) {
     let n = nodes[i];
-    let k = makeNode( n, options );
+    let k = makeNode(n, options);
 
-    elkNodes.push( k );
+    elkNodes.push(k);
 
-    elkEleLookup[ n.id() ] = k;
+    elkEleLookup[n.id()] = k;
   }
 
   // map all edges
-  for( let i = 0; i < edges.length; i++ ){
+  for (let i = 0; i < edges.length; i++) {
     let e = edges[i];
-    let k = makeEdge( e, options );
+    let k = makeEdge(e, options);
 
-    elkEdges.push( k );
+    elkEdges.push(k);
 
-    elkEleLookup[ e.id() ] = k;
+    elkEleLookup[e.id()] = k;
   }
 
   // make hierarchy
-  for( let i = 0; i < elkNodes.length; i++ ){
+  for (let i = 0; i < elkNodes.length; i++) {
     let k = elkNodes[i];
     let n = k._cyEle;
 
-    if( !n.isChild() ){
-      graph.children.push( k );
+    if (!n.isChild()) {
+      graph.children.push(k);
     } else {
       let parent = n.parent();
-      let parentK = elkEleLookup[ parent.id() ];
+      let parentK = elkEleLookup[parent.id()];
 
-      let children = parentK.children = parentK.children || [];
+      let children = (parentK.children = parentK.children || []);
 
-      children.push( k );
+      children.push(k);
     }
   }
 
-  for( let i = 0; i < elkEdges.length; i++ ){
+  for (let i = 0; i < elkEdges.length; i++) {
     let k = elkEdges[i];
 
     // put all edges in the top level for now
@@ -127,25 +126,30 @@ const makeGraph = function( nodes, edges, options ){
 
       kp.edges.push( k );
     } else {*/
-    graph.edges.push( k );
+    graph.edges.push(k);
     //}
   }
 
   return graph;
 };
 
-function Layout( options ){
+function Layout(options) {
   const elkOptions = options.elk;
   const cy = options.cy;
 
-  this.options = assign( {}, defaults, options );
+  this.options = assign({}, defaults, options);
 
-  this.options.elk = assign( {
-    aspectRatio: cy.width() / cy.height()
-  }, defaults.elk, elkOptions, elkOverrides );
+  this.options.elk = assign(
+    {
+      aspectRatio: cy.width() / cy.height(),
+    },
+    defaults.elk,
+    elkOptions,
+    elkOverrides
+  );
 }
 
-Layout.prototype.run = function() {
+Layout.prototype.run = function () {
   const layout = this;
   const options = this.options;
 
@@ -154,22 +158,26 @@ Layout.prototype.run = function() {
   const edges = eles.edges();
 
   const elk = new ELK();
-  const graph = makeGraph( nodes, edges, options );
+  const graph = makeGraph(nodes, edges, options);
 
-  elk.layout(graph, {
-    layoutOptions: options.elk
-  }).then(() => {
-    nodes.filter(n => !n.isParent()).layoutPositions( layout, options, n => getPos(n, options) );
-  });
+  elk
+    .layout(graph, {
+      layoutOptions: options.elk,
+    })
+    .then(() => {
+      nodes
+        .filter((n) => !n.isParent())
+        .layoutPositions(layout, options, (n) => getPos(n, options));
+    });
 
   return this;
 };
 
-Layout.prototype.stop = function(){
+Layout.prototype.stop = function () {
   return this; // chaining
 };
 
-Layout.prototype.destroy = function(){
+Layout.prototype.destroy = function () {
   return this; // chaining
 };
 
