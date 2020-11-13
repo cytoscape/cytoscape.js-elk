@@ -133,52 +133,54 @@ const makeGraph = function (nodes, edges, options) {
   return graph;
 };
 
-function Layout(options) {
-  const elkOptions = options.elk;
-  const cy = options.cy;
+class Layout {
+  constructor(options) {
+    const elkOptions = options.elk;
+    const cy = options.cy;
 
-  this.options = assign({}, defaults, options);
+    this.options = assign({}, defaults, options);
 
-  this.options.elk = assign(
-    {
-      aspectRatio: cy.width() / cy.height(),
-    },
-    defaults.elk,
-    elkOptions,
-    elkOverrides
-  );
+    this.options.elk = assign(
+      {
+        aspectRatio: cy.width() / cy.height(),
+      },
+      defaults.elk,
+      elkOptions,
+      elkOverrides
+    );
+  }
+
+  run() {
+    const layout = this;
+    const options = this.options;
+
+    const eles = options.eles;
+    const nodes = eles.nodes();
+    const edges = eles.edges();
+
+    const elk = new ELK();
+    const graph = makeGraph(nodes, edges, options);
+
+    elk
+      .layout(graph, {
+        layoutOptions: options.elk,
+      })
+      .then(() => {
+        nodes
+          .filter((n) => !n.isParent())
+          .layoutPositions(layout, options, (n) => getPos(n, options));
+      });
+
+    return this;
+  }
+
+  stop() {
+    return this; // chaining
+  }
+
+  destroy() {
+    return this; // chaining
+  }
 }
-
-Layout.prototype.run = function () {
-  const layout = this;
-  const options = this.options;
-
-  const eles = options.eles;
-  const nodes = eles.nodes();
-  const edges = eles.edges();
-
-  const elk = new ELK();
-  const graph = makeGraph(nodes, edges, options);
-
-  elk
-    .layout(graph, {
-      layoutOptions: options.elk,
-    })
-    .then(() => {
-      nodes
-        .filter((n) => !n.isParent())
-        .layoutPositions(layout, options, (n) => getPos(n, options));
-    });
-
-  return this;
-};
-
-Layout.prototype.stop = function () {
-  return this; // chaining
-};
-
-Layout.prototype.destroy = function () {
-  return this; // chaining
-};
 
 export default Layout;
