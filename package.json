@@ -10,11 +10,9 @@
     "pages": "cp -a dist/ pages/dist/ && gh-pages -d pages",
     "postpublish": "run-s pages",
     "lint": "eslint src",
-    "build": "cross-env NODE_ENV=production webpack",
-    "build:min": "cross-env NODE_ENV=production MIN=true webpack",
-    "build:release": "run-s build",
-    "watch": "webpack --progress --watch",
-    "dev": "webpack-dev-server --open"
+    "build": "webpack --mode=production",
+    "watch": "webpack --progress --watch --mode=development",
+    "dev": "webpack serve"
   },
   "repository": {
     "type": "git",
@@ -33,14 +31,14 @@
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
     "babel-loader": "^8.0.0",
-    "cross-env": "^5.0.0",
     "eslint": "^7.13.0",
     "eslint-config-prettier": "^6.15.0",
     "gh-pages": "^1.0.0",
     "npm-run-all": "^4.1.2",
     "prettier": "^2.1.2",
-    "webpack": "^2.6.1",
-    "webpack-dev-server": "^2.4.5"
+    "webpack": "^5.4.0",
+    "webpack-cli": "^4.2.0",
+    "webpack-dev-server": "^3.11.0"
   },
   "peerDependencies": {
     "cytoscape": "^3.2.0"
@@ -50,5 +48,14 @@
   },
   "prettier": {
     "singleQuote": true
-  }
+  },
+  "browserslist": [
+    "ie 9-11",
+    "firefox >= 4",
+    "chrome >= 23",
+    "> 1%",
+    "last 2 major versions",
+    "since 2012",
+    "not op_mini all"
+  ]
 }

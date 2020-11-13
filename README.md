@@ -108,7 +108,7 @@ N.b. all builds use babel, so modern ES features can be used in the `src`.
 
 This project is set up to automatically be published to npm.  To publish:
 
-1. Build the extension : `npm run build:release`
+1. Build the extension : `npm run build`
 2. Commit the build : `git commit -am "Build for release"`
 3. Bump the version number and tag: `npm version major|minor|patch`
 4. Push to origin: `git push && git push --tags`

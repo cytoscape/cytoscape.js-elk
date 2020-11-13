@@ -7,84 +7,89 @@
 		exports["cytoscapeElk"] = factory(require("elkjs"));
 	else
 		root["cytoscapeElk"] = factory(root["ELK"]);
-})(this, function(__WEBPACK_EXTERNAL_MODULE_4__) {
-return /******/ (function(modules) { // webpackBootstrap
-/******/ 	// The module cache
-/******/ 	var installedModules = {};
-/******/
-/******/ 	// The require function
-/******/ 	function __webpack_require__(moduleId) {
-/******/
-/******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId]) {
-/******/ 			return installedModules[moduleId].exports;
-/******/ 		}
-/******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = installedModules[moduleId] = {
-/******/ 			i: moduleId,
-/******/ 			l: false,
-/******/ 			exports: {}
-/******/ 		};
-/******/
-/******/ 		// Execute the module function
-/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-/******/
-/******/ 		// Flag the module as loaded
-/******/ 		module.l = true;
-/******/
-/******/ 		// Return the exports of the module
-/******/ 		return module.exports;
-/******/ 	}
-/******/
-/******/
-/******/ 	// expose the modules object (__webpack_modules__)
-/******/ 	__webpack_require__.m = modules;
-/******/
-/******/ 	// expose the module cache
-/******/ 	__webpack_require__.c = installedModules;
-/******/
-/******/ 	// identity function for calling harmony imports with the correct context
-/******/ 	__webpack_require__.i = function(value) { return value; };
-/******/
-/******/ 	// define getter function for harmony exports
-/******/ 	__webpack_require__.d = function(exports, name, getter) {
-/******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, {
-/******/ 				configurable: false,
-/******/ 				enumerable: true,
-/******/ 				get: getter
-/******/ 			});
-/******/ 		}
-/******/ 	};
-/******/
-/******/ 	// getDefaultExport function for compatibility with non-harmony modules
-/******/ 	__webpack_require__.n = function(module) {
-/******/ 		var getter = module && module.__esModule ?
-/******/ 			function getDefault() { return module['default']; } :
-/******/ 			function getModuleExports() { return module; };
-/******/ 		__webpack_require__.d(getter, 'a', getter);
-/******/ 		return getter;
-/******/ 	};
-/******/
-/******/ 	// Object.prototype.hasOwnProperty.call
-/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
-/******/
-/******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "";
-/******/
-/******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
-/******/ })
-/************************************************************************/
-/******/ ([
-/* 0 */
-/***/ (function(module, exports, __webpack_require__) {
+})(self, function(__WEBPACK_EXTERNAL_MODULE__434__) {
+return /******/ (function() { // webpackBootstrap
+/******/ 	"use strict";
+/******/ 	var __webpack_modules__ = ({
 
-var ELK = __webpack_require__(4);
+/***/ 466:
+/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
-var assign = __webpack_require__(1);
+// ESM COMPAT FLAG
+__webpack_require__.r(__webpack_exports__);
 
-var defaults = __webpack_require__(2);
+// EXPORTS
+__webpack_require__.d(__webpack_exports__, {
+  "default": function() { return /* binding */ src; }
+});
+
+// EXTERNAL MODULE: external {"commonjs":"elkjs","commonjs2":"elkjs","amd":"elkjs","root":"ELK"}
+var external_commonjs_elkjs_commonjs2_elkjs_amd_elkjs_root_ELK_ = __webpack_require__(434);
+var external_commonjs_elkjs_commonjs2_elkjs_amd_elkjs_root_ELK_default = /*#__PURE__*/__webpack_require__.n(external_commonjs_elkjs_commonjs2_elkjs_amd_elkjs_root_ELK_);
+;// CONCATENATED MODULE: ./src/assign.js
+// Simple, internal Object.assign() polyfill for options objects etc.
+function assign_assign(tgt) {
+  for (var _len = arguments.length, srcs = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    srcs[_key - 1] = arguments[_key];
+  }
+
+  srcs.forEach(function (src) {
+    Object.keys(src).forEach(function (k) {
+      return tgt[k] = src[k];
+    });
+  });
+  return tgt;
+}
+
+/* harmony default export */ var src_assign = (Object.assign != null ? Object.assign.bind(Object) : assign_assign);
+;// CONCATENATED MODULE: ./src/defaults.js
+var defaults = {
+  nodeDimensionsIncludeLabels: false,
+  // Boolean which changes whether label dimensions are included when calculating node dimensions
+  fit: true,
+  // Whether to fit
+  padding: 20,
+  // Padding on fit
+  animate: false,
+  // Whether to transition the node positions
+  animateFilter: function animateFilter() {
+    return true;
+  },
+  // Whether to animate specific nodes when animation is on; non-animated nodes immediately go to their final positions
+  animationDuration: 500,
+  // Duration of animation in ms if enabled
+  animationEasing: undefined,
+  // Easing of animation if enabled
+  transform: function transform(node, pos) {
+    return pos;
+  },
+  // A function that applies a transform to the final node position
+  ready: undefined,
+  // Callback on layoutready
+  stop: undefined,
+  // Callback on layoutstop
+  elk: {
+    // Options to pass directly to ELK `layoutOptions`
+    // the elk algorithm to use
+    // one of 'box', 'disco', 'force', 'layered', 'mrtree', 'radial', 'random', 'stress'
+    // (see https://www.eclipse.org/elk/reference/algorithms.html)
+    algorithm: undefined
+  },
+  priority: function priority() {
+    return null;
+  } // Edges with a non-nil value are skipped when geedy edge cycle breaking is enabled
+
+};
+/* harmony default export */ var src_defaults = (defaults);
+;// CONCATENATED MODULE: ./src/layout.js
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+
+
 
 var elkOverrides = {};
 
@@ -98,7 +103,7 @@ var getPos = function getPos(ele, options) {
   };
 
   while (parent.nonempty()) {
-    var kp = parent.scratch('klay');
+    var kp = parent.scratch('elk');
     p.x += kp.x;
     p.y += kp.y;
     parent = parent.parent();
@@ -205,112 +210,57 @@ var makeGraph = function makeGraph(nodes, edges, options) {
   return graph;
 };
 
-function Layout(options) {
-  var elkOptions = options.elk;
-  var cy = options.cy;
-  this.options = assign({}, defaults, options);
-  this.options.elk = assign({
-    aspectRatio: cy.width() / cy.height()
-  }, defaults.elk, elkOptions, elkOverrides);
-}
+var Layout = /*#__PURE__*/function () {
+  function Layout(options) {
+    _classCallCheck(this, Layout);
 
-Layout.prototype.run = function () {
-  var layout = this;
-  var options = this.options;
-  var eles = options.eles;
-  var nodes = eles.nodes();
-  var edges = eles.edges();
-  var elk = new ELK();
-  var graph = makeGraph(nodes, edges, options);
-  elk.layout(graph, {
-    layoutOptions: options.elk
-  }).then(function () {
-    nodes.filter(function (n) {
-      return !n.isParent();
-    }).layoutPositions(layout, options, function (n) {
-      return getPos(n, options);
-    });
-  });
-  return this;
-};
-
-Layout.prototype.stop = function () {
-  return this; // chaining
-};
-
-Layout.prototype.destroy = function () {
-  return this; // chaining
-};
-
-module.exports = Layout;
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports) {
-
-// Simple, internal Object.assign() polyfill for options objects etc.
-module.exports = Object.assign != null ? Object.assign.bind(Object) : function (tgt) {
-  for (var _len = arguments.length, srcs = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-    srcs[_key - 1] = arguments[_key];
+    var elkOptions = options.elk;
+    var cy = options.cy;
+    this.options = src_assign({}, src_defaults, options);
+    this.options.elk = src_assign({
+      aspectRatio: cy.width() / cy.height()
+    }, src_defaults.elk, elkOptions, elkOverrides);
   }
 
-  srcs.forEach(function (src) {
-    Object.keys(src).forEach(function (k) {
-      return tgt[k] = src[k];
-    });
-  });
-  return tgt;
-};
+  _createClass(Layout, [{
+    key: "run",
+    value: function run() {
+      var layout = this;
+      var options = this.options;
+      var eles = options.eles;
+      var nodes = eles.nodes();
+      var edges = eles.edges();
+      var elk = new (external_commonjs_elkjs_commonjs2_elkjs_amd_elkjs_root_ELK_default())();
+      var graph = makeGraph(nodes, edges, options);
+      elk.layout(graph, {
+        layoutOptions: options.elk
+      }).then(function () {
+        nodes.filter(function (n) {
+          return !n.isParent();
+        }).layoutPositions(layout, options, function (n) {
+          return getPos(n, options);
+        });
+      });
+      return this;
+    }
+  }, {
+    key: "stop",
+    value: function stop() {
+      return this; // chaining
+    }
+  }, {
+    key: "destroy",
+    value: function destroy() {
+      return this; // chaining
+    }
+  }]);
 
-/***/ }),
-/* 2 */
-/***/ (function(module, exports) {
+  return Layout;
+}();
 
-var defaults = {
-  nodeDimensionsIncludeLabels: false,
-  // Boolean which changes whether label dimensions are included when calculating node dimensions
-  fit: true,
-  // Whether to fit
-  padding: 20,
-  // Padding on fit
-  animate: false,
-  // Whether to transition the node positions
-  animateFilter: function animateFilter() {
-    return true;
-  },
-  // Whether to animate specific nodes when animation is on; non-animated nodes immediately go to their final positions
-  animationDuration: 500,
-  // Duration of animation in ms if enabled
-  animationEasing: undefined,
-  // Easing of animation if enabled
-  transform: function transform(node, pos) {
-    return pos;
-  },
-  // A function that applies a transform to the final node position
-  ready: undefined,
-  // Callback on layoutready
-  stop: undefined,
-  // Callback on layoutstop
-  elk: {
-    // Options to pass directly to ELK `layoutOptions`
-    // the elk algorithm to use
-    // one of 'box', 'disco', 'force', 'layered', 'mrtree', 'radial', 'random', 'stress'
-    // (see https://www.eclipse.org/elk/reference/algorithms.html)
-    algorithm: undefined
-  },
-  priority: function priority() {
-    return null;
-  } // Edges with a non-nil value are skipped when geedy edge cycle breaking is enabled
-
-};
-module.exports = defaults;
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var impl = __webpack_require__(0); // registers the extension on a cytoscape lib ref
-
+/* harmony default export */ var layout = (Layout);
+;// CONCATENATED MODULE: ./src/index.js
+ // registers the extension on a cytoscape lib ref
 
 var register = function register(cytoscape) {
   if (!cytoscape) {
@@ -318,7 +268,7 @@ var register = function register(cytoscape) {
   } // can't register if cytoscape unspecified
 
 
-  cytoscape('layout', 'elk', impl); // register with cytoscape.js
+  cytoscape('layout', 'elk', layout); // register with cytoscape.js
 };
 
 if (typeof cytoscape !== 'undefined') {
@@ -327,14 +277,88 @@ if (typeof cytoscape !== 'undefined') {
   register(cytoscape);
 }
 
-module.exports = register;
+/* harmony default export */ var src = (register);
 
 /***/ }),
-/* 4 */
-/***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_4__;
+/***/ 434:
+/***/ (function(module) {
+
+module.exports = __WEBPACK_EXTERNAL_MODULE__434__;
 
 /***/ })
-/******/ ]);
+
+/******/ 	});
+/************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		if(__webpack_module_cache__[moduleId]) {
+/******/ 			return __webpack_module_cache__[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/ 	
+/************************************************************************/
+/******/ 	/* webpack/runtime/compat get default export */
+/******/ 	!function() {
+/******/ 		// getDefaultExport function for compatibility with non-harmony modules
+/******/ 		__webpack_require__.n = function(module) {
+/******/ 			var getter = module && module.__esModule ?
+/******/ 				function() { return module['default']; } :
+/******/ 				function() { return module; };
+/******/ 			__webpack_require__.d(getter, { a: getter });
+/******/ 			return getter;
+/******/ 		};
+/******/ 	}();
+/******/ 	
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	!function() {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__webpack_require__.d = function(exports, definition) {
+/******/ 			for(var key in definition) {
+/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	}();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	!function() {
+/******/ 		__webpack_require__.o = function(obj, prop) { return Object.prototype.hasOwnProperty.call(obj, prop); }
+/******/ 	}();
+/******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	!function() {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = function(exports) {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	}();
+/******/ 	
+/************************************************************************/
+/******/ 	// module exports must be returned from runtime so entry inlining is disabled
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(466);
+/******/ })()
+;
 });
