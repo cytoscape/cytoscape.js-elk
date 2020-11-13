@@ -1,6 +1,4 @@
 const path = require('path');
-const pkg = require('./package.json');
-const camelcase = require('camelcase');
 const process = require('process');
 const webpack = require('webpack');
 const env = process.env;
@@ -16,8 +14,8 @@ let config = {
   },
   output: {
     path: path.join(__dirname, 'dist'),
-    filename: pkg.name + '.js',
-    library: camelcase(pkg.name),
+    filename: 'cytoscape-elk.js',
+    library: 'cytoscapeElk',
     libraryTarget: 'umd',
   },
   module: {
