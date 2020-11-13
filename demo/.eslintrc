@@ -1,0 +1,6 @@
+{
+  "globals": {
+    "cytoscape": false,
+    "_": false
+  }
+}

@@ -68,7 +68,7 @@ var options = {
   elk: {
     // All options are available at http://www.eclipse.org/elk/reference.html
     // 'org.eclipse.elk.' can be dropped from the Identifier
-    // Or look at demo.html for an example.
+    // Or look at demo-demo.js for an example.
     // Enums use the name of the enum e.g.
     // 'searchOrder': 'DFS'
     //
@@ -83,16 +83,13 @@ cy.layout( options ).run();
 
 The set of  `options.elk.algorithm` values that are supported by ELK.js follows:
 
-https://cytoscape.org/cytoscape.js-elk/demo-box.html
-https://cytoscape.org/cytoscape-elk/demo-box.html
-
-- `box` : ([Demo](https://cytoscape.github.io/cytoscape.js-elk/demo-box.html)) ([Docs](https://www.eclipse.org/elk/reference/algorithms/org-eclipse-elk-box.html)) Pack the nodes like boxes.
-- `disco` : ([Demo](https://cytoscape.github.io/cytoscape.js-elk/demo-disco.html)) ([Docs](https://www.eclipse.org/elk/reference/algorithms/org-eclipse-elk-disco.html)) Pack the (disconnected) components.  A secondary layout may be applied to each component via `options.elk.componentLayoutAlgorithm`.
-- `force` : ([Demo](https://cytoscape.github.io/cytoscape.js-elk/demo-force.html)) ([Docs](https://www.eclipse.org/elk/reference/algorithms/org-eclipse-elk-force.html)) Apply a basic force-directed layout.
-- `layered` : ([Demo](https://cytoscape.github.io/cytoscape.js-elk/demo-layered.html)) ([Docs](https://www.eclipse.org/elk/reference/algorithms/org-eclipse-elk-layered.html)) Apply a hierarchical layout, appropriate for DAGs and trees.
-- `mrtree` : ([Demo](https://cytoscape.github.io/cytoscape.js-elk/demo-mrtree.html)) ([Docs](https://www.eclipse.org/elk/reference/algorithms/org-eclipse-elk-mrtree.html)) Apply a traditional, hierarchical tree layout.
-- `random` : ([Demo](https://cytoscape.github.io/cytoscape.js-elk/demo-random.html)) ([Docs](https://www.eclipse.org/elk/reference/algorithms/org-eclipse-elk-random.html)) Apply random positions to the nodes.
-- `stress` : ([Demo](https://cytoscape.github.io/cytoscape.js-elk/demo-stress.html)) ([Docs](https://www.eclipse.org/elk/reference/algorithms/org-eclipse-elk-stress.html)) Apply a force-directed layout.
+- `box` : ([Demo](https://cytoscape.github.io/cytoscape-elk.js/demo.html?demo=box)) ([Docs](https://www.eclipse.org/elk/reference/algorithms/org-eclipse-elk-box.html)) Pack the nodes like boxes.
+- `disco` : ([Demo](https://cytoscape.github.io/cytoscape-elk.js/demo.html?demo=disco)) ([Docs](https://www.eclipse.org/elk/reference/algorithms/org-eclipse-elk-disco.html)) Pack the (disconnected) components.  A secondary layout may be applied to each component via `options.elk.componentLayoutAlgorithm`.
+- `force` : ([Demo](https://cytoscape.github.io/cytoscape-elk.js/demo.html?demo=force)) ([Docs](https://www.eclipse.org/elk/reference/algorithms/org-eclipse-elk-force.html)) Apply a basic force-directed layout.
+- `layered` : ([Demo](https://cytoscape.github.io/cytoscape-elk.js/demo.html?demo=layered)) ([Docs](https://www.eclipse.org/elk/reference/algorithms/org-eclipse-elk-layered.html)) Apply a hierarchical layout, appropriate for DAGs and trees.
+- `mrtree` : ([Demo](https://cytoscape.github.io/cytoscape-elk.js/demo.html?demo=mrtree) ([Docs](https://www.eclipse.org/elk/reference/algorithms/org-eclipse-elk-mrtree.html)) Apply a traditional, hierarchical tree layout.
+- `random` : ([Demo](https://cytoscape.github.io/cytoscape-elk.js/demo.html?demo=random)) ([Docs](https://www.eclipse.org/elk/reference/algorithms/org-eclipse-elk-random.html)) Apply random positions to the nodes.
+- `stress` : ([Demo](https://cytoscape.github.io/cytoscape-elk.js/demo.html?demo=stress)) ([Docs](https://www.eclipse.org/elk/reference/algorithms/org-eclipse-elk-stress.html)) Apply a force-directed layout.
 
 See the [ELK.js documentation](https://github.com/OpenKieler/elkjs) and the [ELK algorithm options documentation](https://www.eclipse.org/elk/reference/algorithms.html) for more information.
 
