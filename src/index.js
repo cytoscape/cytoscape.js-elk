@@ -1,4 +1,4 @@
-const impl = require('./layout');
+import impl from './layout';
 
 // registers the extension on a cytoscape lib ref
 let register = function (cytoscape) {
@@ -15,4 +15,4 @@ if (typeof cytoscape !== 'undefined') {
   register(cytoscape);
 }
 
-module.exports = register;
+export default register;

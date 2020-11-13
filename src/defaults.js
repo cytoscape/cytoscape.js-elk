@@ -25,4 +25,4 @@ let defaults = {
   }, // Edges with a non-nil value are skipped when geedy edge cycle breaking is enabled
 };
 
-module.exports = defaults;
+export default defaults;

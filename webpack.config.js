@@ -1,3 +1,4 @@
+/* eslint-env node */
 const path = require('path');
 const process = require('process');
 const webpack = require('webpack');

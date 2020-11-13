@@ -1,6 +1,6 @@
-const ELK = require('elkjs/lib/elk.bundled.js');
-const assign = require('./assign');
-const defaults = require('./defaults');
+import ELK from 'elkjs/lib/elk.bundled.js';
+import assign from './assign';
+import defaults from './defaults';
 
 const elkOverrides = {};
 
@@ -181,4 +181,4 @@ Layout.prototype.destroy = function () {
   return this; // chaining
 };
 
-module.exports = Layout;
+export default Layout;
