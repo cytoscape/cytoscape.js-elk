@@ -32,9 +32,9 @@
   },
   "homepage": "https://github.com/jfstephe/cytoscape.js-elk",
   "devDependencies": {
-    "babel-core": "^6.24.1",
-    "babel-loader": "^7.0.0",
-    "babel-preset-env": "^1.5.1",
+    "@babel/core": "^7.0.0",
+    "@babel/preset-env": "^7.0.0",
+    "babel-loader": "^8.0.0",
     "camelcase": "^4.1.0",
     "chai": "4.0.2",
     "cpy-cli": "^1.0.1",
