@@ -1,6 +1,6 @@
 {
   "name": "cytoscape-elk",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "The ELK layout algorithm adapter for Cytoscape.js",
   "main": "cytoscape-elk.js",
   "author": {
