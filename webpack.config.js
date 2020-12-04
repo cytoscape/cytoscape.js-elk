@@ -2,12 +2,11 @@
 const path = require('path');
 const process = require('process');
 const webpack = require('webpack');
-const env = process.env;
-const NODE_ENV = env.NODE_ENV;
-const MIN = env.MIN;
+const {env} = process;
+const {NODE_ENV, MIN} = env;
 const PROD = NODE_ENV === 'production';
 
-let config = {
+const config = {
   devtool: PROD ? false : 'inline-source-map',
   entry: './src/index.js',
   devServer: {
