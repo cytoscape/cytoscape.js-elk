@@ -7,7 +7,7 @@
     "name": "John Stephenson"
   },
   "scripts": {
-    "pages": "cp -a dist/ pages/dist/ && gh-pages -d pages",
+    "pages": "gh-pages -d demo",
     "postpublish": "run-s pages",
     "lint": "eslint src",
     "build": "webpack --mode=production",
