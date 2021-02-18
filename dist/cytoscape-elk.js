@@ -7,7 +7,7 @@
 		exports["cytoscapeElk"] = factory(require("elkjs"));
 	else
 		root["cytoscapeElk"] = factory(root["ELK"]);
-})(self, function(__WEBPACK_EXTERNAL_MODULE__434__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE__434__) {
 return /******/ (function() { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({

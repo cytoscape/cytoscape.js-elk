@@ -14,6 +14,7 @@ module.exports = (env, argv) => {
       filename: 'cytoscape-elk.js',
       library: 'cytoscapeElk',
       libraryTarget: 'umd',
+      globalObject: 'this',
     },
     module: {
       rules: [{ test: /\.js$/, exclude: /node_modules/, use: 'babel-loader' }],
