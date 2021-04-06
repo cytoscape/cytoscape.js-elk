@@ -21,8 +21,8 @@ const createHtmlForTip = ({ _private: { data } }) => {
     }
   }
   let baseHtml = `<div class="node-text wordwrap">
-  <div data-type="contextMenu" class="menu-content"><b>Node ID:</b><span>${data.id}</span>
-  <div data-type="contextMenu" class="menu-content"><b>Pattern:</b><span>${data.pattern}</span>
+  <div class="menu-content"><b>Node ID:</b><span>${data.id}</span>
+  <div class="menu-content"><b>Pattern:</b><span>${data.pattern}</span>
   </div>`;
   if (rulePatterHtml) {
     baseHtml += `<div class='menu-sub-content'><b>Rule Pattern</b></div>${rulePatterHtml}`;
@@ -62,7 +62,7 @@ const defaults = {
           return content;
         },
         hideOnClick: true,
-        allowHTML: true,
+        allowHTML: false,
         onShow: (instanceTip) => {
          setTimeout(() => { // wait a little bit (to actually get rendered)
            instanceTip.popper.addEventListener('click', () => {
