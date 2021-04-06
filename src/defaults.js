@@ -2,7 +2,7 @@ import Tippy from 'tippy.js';
 import { generateGetBoundingClientRect } from './assign';
 
 // tooltip helper:
-let tip, latestTooltipNodeDisplayed;
+let tip, selectedNodeFromTip;
 
 const removeTip = () => {
   if (tip) {
@@ -12,7 +12,6 @@ const removeTip = () => {
 };
 
 const createHtmlForTip = ({ _private: { data } }) => {
-  latestTooltipNodeDisplayed = data; // always select the latest node, whose tooltip is being rendered
   const { rulePattern } = data;
   let rulePatterHtml = '';
   if (rulePattern) {
@@ -21,9 +20,10 @@ const createHtmlForTip = ({ _private: { data } }) => {
       rulePatterHtml += `<div class='menu-sub-content'><span class='pattern-value'>${pattern}</span></div>`;
     }
   }
-  let baseHtml = `${'<div class="node-text wordwrap">'
-  + '<div class="divider"></div>'
-  + '<div data-type="contextMenu" class="menu-content"><b>Pattern:</b> <span>'}${data.pattern}</span></div>`;
+  let baseHtml = `<div class="node-text wordwrap">
+  <div data-type="contextMenu" class="menu-content"><b>Node ID:</b><span>${data.id}</span>
+  <div data-type="contextMenu" class="menu-content"><b>Pattern:</b><span>${data.pattern}</span>
+  </div>`;
   if (rulePatterHtml) {
     baseHtml += `<div class='menu-sub-content'><b>Rule Pattern</b></div>${rulePatterHtml}`;
   }
@@ -57,11 +57,20 @@ const defaults = {
         content: () => {
           const baseHtml = createHtmlForTip(node);
           const content = document.createElement('div');
+          content.classList.add('clickable'); // add a style, so the user can see it's clickable.
           content.innerHTML = baseHtml;
           return content;
         },
         hideOnClick: true,
         allowHTML: true,
+        onShow: (instanceTip) => {
+         setTimeout(() => { // wait a little bit (to actually get rendered)
+           instanceTip.popper.addEventListener('click', () => {
+             selectedNodeFromTip = node.data();
+             console.log('selectedNodeFromTip ->', selectedNodeFromTip);
+           });
+         });
+        },
       });
       tip.show();
     });
@@ -69,7 +78,6 @@ const defaults = {
     cy.on('tap', 'node', (evt) => {
       const nodeClicked = evt.target;
       console.log('nodeClicked ->', nodeClicked);
-      console.log('latestTooltipNodeDisplayed ->', latestTooltipNodeDisplayed);
     });
 
     cy.on('zoom', () => {

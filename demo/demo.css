@@ -35,6 +35,8 @@ body {
   border: 1px solid black;
 }
 
-.tippy-content:first-child {
-  padding: 5px
+.tippy-content .clickable {
+  padding: 5px;
+  cursor: pointer;
+  pointer-events: all;
 }
