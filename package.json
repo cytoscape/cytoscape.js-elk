@@ -44,7 +44,9 @@
     "cytoscape": "^3.2.0"
   },
   "dependencies": {
-    "elkjs": "^0.7.0"
+    "cytoscape-popper": "^2.0.0",
+    "elkjs": "^0.7.0",
+    "tippy.js": "^6.3.1"
   },
   "prettier": {
     "singleQuote": true

@@ -8,4 +8,15 @@ function assign(tgt, ...srcs) {
   return tgt;
 }
 
+export const generateGetBoundingClientRect = (x = 0, y = 0) => {
+  return () => ({
+    width: 0,
+    height: 0,
+    top: y,
+    right: x,
+    bottom: y,
+    left: x
+  });
+};
+
 export default Object.assign != null ? Object.assign.bind(Object) : assign;

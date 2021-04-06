@@ -1,12 +1,12 @@
 const demos = [
-  'box',
-  'demo',
-  'disco',
-  'force',
+  // 'box',
+  // 'demo',
+  // 'disco',
+  // 'force',
   'layered',
-  'mrtree',
-  'random',
-  'stress',
+  // 'mrtree',
+  // 'random',
+  // 'stress',
 ];
 
 function populateDemosList() {
