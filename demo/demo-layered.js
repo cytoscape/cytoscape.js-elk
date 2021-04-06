@@ -1,7 +1,8 @@
 cytoscape({
   container: document.getElementById('cy'),
-  elements: fetch('example-graphs/planar-chain.json').then((res) => res.json()),
+  // elements: fetch('example-graphs/planar-chain.json').then((res) => res.json()),
   // elements: fetch('example-graphs/windows_cyto.json').then((res) => res.json()),
+  elements: fetch('example-graphs/windows_cyto50.json').then((res) => res.json()),
   layout: {
     name: 'elk',
     elk: {

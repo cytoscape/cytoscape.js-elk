@@ -30,3 +30,11 @@ body {
   display: inline;
   padding-right: 0.5em;
 }
+
+.tippy-content {
+  border: 1px solid black;
+}
+
+.tippy-content:first-child {
+  padding: 5px
+}
