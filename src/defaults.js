@@ -50,7 +50,7 @@ const defaults = {
       const dummyDomEle = document.createElement('div');
       tip = new Tippy(dummyDomEle, { // tippy props:
         // getReferenceClientRect: generateGetBoundingClientRect(evt.renderedPosition.x, evt.renderedPosition.y), // https://atomiks.github.io/tippyjs/v6/all-props/#getreferenceclientrect
-        getReferenceClientRect: generateGetBoundingClientRect(evt.originalEvent.x, evt.originalEvent.y + 20), // https://atomiks.github.io/tippyjs/v6/all-props/#getreferenceclientrect
+        getReferenceClientRect: generateGetBoundingClientRect(evt.originalEvent.x, evt.originalEvent.y - 20), // https://atomiks.github.io/tippyjs/v6/all-props/#getreferenceclientrect
         trigger: 'manual', // mandatory, we cause the tippy to show programmatically.
         // your own custom props
         // content prop can be used when the target is a single element https://atomiks.github.io/tippyjs/v6/constructor/#prop

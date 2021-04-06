@@ -38,5 +38,6 @@ body {
 .tippy-content .clickable {
   padding: 5px;
   cursor: pointer;
+  background-color: #ededed;
   pointer-events: all;
 }
