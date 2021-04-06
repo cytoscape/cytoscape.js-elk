@@ -2,7 +2,7 @@ import Tippy from 'tippy.js';
 import { generateGetBoundingClientRect } from './assign';
 
 // tooltip helper:
-let tip = undefined;
+let tip, latestTooltipNodeDisplayed;
 
 const removeTip = () => {
   if (tip) {
@@ -12,6 +12,7 @@ const removeTip = () => {
 };
 
 const createHtmlForTip = ({ _private: { data } }) => {
+  latestTooltipNodeDisplayed = data; // always select the latest node, whose tooltip is being rendered
   const { rulePattern } = data;
   let rulePatterHtml = '';
   if (rulePattern) {
@@ -59,6 +60,8 @@ const defaults = {
           content.innerHTML = baseHtml;
           return content;
         },
+        hideOnClick: true,
+        allowHTML: true,
       });
       tip.show();
     });
@@ -66,6 +69,7 @@ const defaults = {
     cy.on('tap', 'node', (evt) => {
       const nodeClicked = evt.target;
       console.log('nodeClicked ->', nodeClicked);
+      console.log('latestTooltipNodeDisplayed ->', latestTooltipNodeDisplayed);
     });
 
     cy.on('zoom', () => {
