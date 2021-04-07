@@ -41,3 +41,7 @@ body {
   background-color: #ededed;
   pointer-events: all;
 }
+
+.hidden {
+'display': 'none'
+}

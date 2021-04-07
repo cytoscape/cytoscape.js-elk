@@ -77,7 +77,17 @@ const defaults = {
 
     cy.on('tap', 'node', (evt) => {
       const nodeClicked = evt.target;
-      console.log('nodeClicked ->', nodeClicked);
+      console.log('nodeClicked ->', nodeClicked.id());
+      nodeClicked.successors().forEach(e=>{
+        if(e.hidden()){
+          e.style("visibility", "visible")
+          e.removeClass('.hidden');
+        }else{
+          e.style("visibility", "hidden")
+          e.addClass('.hidden');
+        }
+      });
+      refreshLayout(false)
     });
 
     cy.on('zoom', () => {
