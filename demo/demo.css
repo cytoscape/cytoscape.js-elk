@@ -10,6 +10,9 @@ body {
   bottom: 0;
   right: 0;
   z-index: 10;
+  /*width: 90%;*/
+  /*height: 90%;*/
+  border: 1px solid black;
 }
 
 #box {
@@ -42,6 +45,6 @@ body {
   pointer-events: all;
 }
 
-.hidden {
-'display': 'none'
-}
+/*.hidden {*/
+/*  display: none;*/
+/*}*/

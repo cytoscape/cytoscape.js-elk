@@ -1,6 +1,6 @@
 const demos = [
   // 'box',
-  'demo',
+  // 'demo',
   // 'disco',
   // 'force',
   'layered',

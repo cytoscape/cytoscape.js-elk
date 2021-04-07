@@ -31,6 +31,48 @@ const createHtmlForTip = ({ _private: { data } }) => {
   return baseHtml;
 };
 
+const isEmpty = (param) => {
+  return !param || param.length === 0;
+};
+
+const tapListenerForUnCollapsing = (evt) => {
+  const { cy } = evt;
+  evt.stopPropagation();
+  evt.preventDefault();
+  const nodeClicked = evt.target;
+  const collapseSuccessors = nodeClicked.data('collapseSuccessors');
+  if (!isEmpty(collapseSuccessors)) {
+    nodeClicked.removeListener('tap');
+    // you have to un-collapse the node.
+    nodeClicked.data('collapseSuccessors', []);
+    collapseSuccessors.removeStyle('display');
+    nodeClicked.on('tap', tapListenerForCollapsing);
+  }
+  // refreshLayout(false);
+  // cy.reset();
+  cy.center();
+  cy.fit();
+};
+
+const tapListenerForCollapsing = (evt) => {
+  const { cy } = evt;
+  evt.stopPropagation();
+  evt.preventDefault();
+  const nodeClicked = evt.target;
+  const collapseSuccessors = nodeClicked.data('collapseSuccessors');
+  if (isEmpty(collapseSuccessors)) {
+    nodeClicked.removeListener('tap');
+    // we're collapsing the nodes.
+    nodeClicked.successors().style('display', 'none');
+    nodeClicked.data('collapseSuccessors', nodeClicked.successors());
+    nodeClicked.on('tap', tapListenerForUnCollapsing);
+  }
+  // refreshLayout(false);
+  // cy.reset();
+  cy.center();
+  cy.fit();
+};
+
 const defaults = {
   nodeDimensionsIncludeLabels: false, // Boolean which changes whether label dimensions are included when calculating node dimensions
   fit: true, // Whether to fit
@@ -76,20 +118,8 @@ const defaults = {
       tip.show();
     });
 
-    cy.on('tap', 'node', (evt) => {
-      const nodeClicked = evt.target;
-      console.log('nodeClicked ->', nodeClicked.id());
-      nodeClicked.successors().forEach(e=>{
-        if(e.hidden()){
-          e.style("visibility", "visible")
-          e.removeClass('.hidden');
-        }else{
-          e.style("visibility", "hidden")
-          e.addClass('.hidden');
-        }
-      });
-      refreshLayout(false)
-    });
+    // As the graph will show all the nodes un-collapsed, the first listener should be the collapsing one.
+    cy.on('tap', 'node', tapListenerForCollapsing);
 
     cy.on('zoom', () => {
       removeTip();
