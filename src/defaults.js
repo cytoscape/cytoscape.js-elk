@@ -15,8 +15,9 @@ const createHtmlForTip = ({ _private: { data } }) => {
   const { rulePattern } = data;
   let rulePatterHtml = '';
   if (rulePattern) {
-    // The root node doesn't have the rulePattern, therefore, we won't render anything there.
-    for (const pattern of rulePattern) {
+
+    const rulePatterSplit = rulePattern.split('\n');
+    for (const pattern of rulePatterSplit) {
       rulePatterHtml += `<div class='menu-sub-content'><span class='pattern-value'>${pattern}</span></div>`;
     }
   }
