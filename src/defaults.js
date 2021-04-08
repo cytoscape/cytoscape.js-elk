@@ -1,8 +1,22 @@
 import Tippy from 'tippy.js';
+// import assign from './assign';
 import { generateGetBoundingClientRect } from './assign';
 
 // tooltip helper:
-let tip, selectedNodeFromTip, cytoLayout;
+let tip, selectedNodeFromTip, cytoLayout, isLoading = false;
+
+/**
+ * When playing around with the layout, the tooltips were not being destroyed automatically. Therefore, we must remove them manually.
+ */
+const removeResidualTipsIfAny = () => {
+  const tippys = document.getElementsByClassName('tippy-box');
+  for (const tippy of tippys) {
+    const parent = tippy.parentNode;
+    if (parent.style.visibility === 'hidden') {
+      parent.parentNode.removeChild(parent);
+    }
+  }
+};
 
 const removeTip = () => {
   if (tip) {
@@ -10,17 +24,18 @@ const removeTip = () => {
     tip.destroy();
   }
   tip = undefined;
+  removeResidualTipsIfAny();
 };
 
 const setAndRefreshLayout = (cy) => {
   removeTip();
   selectedNodeFromTip = undefined;
-  cy.nodes().removeListener('mouseover');
+  cy.nodes().removeListener('mouseover tap');
+  cy.removeListener('zoom');
   if (cytoLayout) {
     cytoLayout.stop();
-    // cy.nodes().removeAllListeners();
-    // cy.removeAllListeners();
   } else {
+    // cytoLayout = cy.makeLayout(assign({}, cy.options().layout, { fit: false }));
     cytoLayout = cy.makeLayout(cy.options().layout);
   }
   cytoLayout.run();
@@ -52,16 +67,21 @@ const isEmpty = (param) => {
 
 const isLeafNode = (node) => {
   return node.successors().length === 0;
+  // return node.isChildless();
 };
 
 const tapListenerForUnCollapsing = (evt) => {
   evt.stopPropagation();
   evt.preventDefault();
+  if (isLoading) {
+    return;
+  }
   const { target: nodeClicked } = evt;
   const collapseSuccessors = nodeClicked.data('collapseSuccessors');
   if (!isEmpty(collapseSuccessors)) {
     // you have to un-collapse the node.
     const { cy } = evt;
+    freezeUI(true, cy);
     nodeClicked.removeListener('tap');
     nodeClicked.data('collapseSuccessors', []);
     collapseSuccessors.removeStyle('display');
@@ -73,6 +93,9 @@ const tapListenerForUnCollapsing = (evt) => {
 const tapListenerForCollapsing = (evt) => {
   evt.stopPropagation();
   evt.preventDefault();
+  if (isLoading) {
+    return;
+  }
   const { target: nodeClicked } = evt;
   if (isLeafNode(nodeClicked)) {
     // no need of collapsing it as we can't collapse leaf nodes.
@@ -82,11 +105,21 @@ const tapListenerForCollapsing = (evt) => {
   if (isEmpty(collapseSuccessors)) {
     // we're collapsing the nodes.
     const { cy } = evt;
+    freezeUI(true, cy);
     nodeClicked.removeListener('tap');
     nodeClicked.successors().style('display', 'none');
     nodeClicked.data('collapseSuccessors', nodeClicked.successors());
     nodeClicked.on('tap', tapListenerForUnCollapsing);
     setAndRefreshLayout(cy);
+  }
+};
+
+const freezeUI = (freeze, cy) => {
+  isLoading = freeze;
+  if (freeze) {
+    cy.container().classList.add('while-loading');
+  } else {
+    cy.container().classList.remove('while-loading');
   }
 };
 
@@ -105,6 +138,9 @@ const defaults = {
   }, // A function that applies a transform to the final node position
   ready: ({ cy }) => {
     cy.on('mouseover', 'node', (evt) => {
+      if (isLoading) {
+        return;
+      }
       removeTip();
       const node = evt.target;
       const dummyDomEle = document.createElement('div');
@@ -135,12 +171,19 @@ const defaults = {
       tip.show();
     });
 
-    // As the graph will show all the nodes un-collapsed, the first listener should be the collapsing one.
-    cy.on('tap', 'node', tapListenerForCollapsing);
+    // As we can call the layout from here, we have to restore the proper tap listener.
+    cy.nodes().forEach((node) =>{
+      if (!isEmpty(node.data('collapseSuccessors'))) {
+        node.on('tap', tapListenerForUnCollapsing);
+      } else {
+        node.on('tap', tapListenerForCollapsing);
+      }
+    });
 
     cy.on('zoom', () => {
       removeTip();
     });
+    freezeUI(false, cy);
   }, // Callback on layoutready
   stop: undefined, // Callback on layoutstop
   elk: {

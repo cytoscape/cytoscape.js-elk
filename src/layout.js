@@ -77,6 +77,10 @@ const makeGraph = function (nodes, edges, options) {
   // map all nodes
   for (let i = 0; i < nodes.length; i++) {
     const n = nodes[i];
+    // TODO: check if we can use remove/restore in defaults.js
+    if (n.style('display') === 'none') {
+      continue;
+    }
     const k = makeNode(n, options);
 
     elkNodes.push(k);
@@ -87,6 +91,10 @@ const makeGraph = function (nodes, edges, options) {
   // map all edges
   for (let i = 0; i < edges.length; i++) {
     const e = edges[i];
+    // TODO: check if we can use remove/restore in defaults.js
+    if (e.style('display') === 'none') {
+      continue;
+    }
     const k = makeEdge(e, options);
 
     elkEdges.push(k);

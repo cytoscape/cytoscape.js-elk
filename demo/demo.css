@@ -48,3 +48,8 @@ body {
 /*.hidden {*/
 /*  display: none;*/
 /*}*/
+
+.while-loading {
+    opacity: .5;
+    cursor: none;
+}
