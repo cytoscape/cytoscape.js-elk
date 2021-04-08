@@ -82,11 +82,12 @@ const tapListenerForUnCollapsing = (evt) => {
     // you have to un-collapse the node.
     const { cy } = evt;
     freezeUI(true, cy);
-    nodeClicked.removeListener('tap');
+    // nodeClicked.removeListener('tap');
     nodeClicked.data('collapseSuccessors', []);
     nodeClicked.data('isCollapsed', 0);
-    collapseSuccessors.removeStyle('display');
-    nodeClicked.on('tap', tapListenerForCollapsing);
+    collapseSuccessors.style('display', 'element');
+    collapseSuccessors.nodes().data('isCollapsed', 0);
+    collapseSuccessors.nodes().data('collapseSuccessors', []);
     setAndRefreshLayout(cy);
   }
 };
@@ -107,11 +108,10 @@ const tapListenerForCollapsing = (evt) => {
     // we're collapsing the nodes.
     const { cy } = evt;
     freezeUI(true, cy);
-    nodeClicked.removeListener('tap');
+    // nodeClicked.removeListener('tap');
     nodeClicked.successors().style('display', 'none');
     nodeClicked.data('isCollapsed', 1);
     nodeClicked.data('collapseSuccessors', nodeClicked.successors());
-    nodeClicked.on('tap', tapListenerForUnCollapsing);
     setAndRefreshLayout(cy);
   }
 };
