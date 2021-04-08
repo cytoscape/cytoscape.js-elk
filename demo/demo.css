@@ -6,8 +6,8 @@ body {
 .tree-container{
   margin: auto;
   width: 85%;
-  height: 95%;
-  border: 3px solid green;
+  height: 100%;
+  /*border: 3px solid green;*/
   padding: 0;
 }
 
