@@ -15,14 +15,22 @@ body {
   border: 1px solid black;
 }
 
-#box {
+#box, #loading-msg {
   font-size: 1em;
   font-weight: bold;
   z-index: 50;
   position: absolute;
+  margin: 0;
+}
+
+.top-left {
   left: 0.5em;
   top: 0.5em;
-  margin: 0;
+}
+
+.center {
+  left: 50%;
+  top: 50%;
 }
 
 #demos {
@@ -45,9 +53,9 @@ body {
   pointer-events: all;
 }
 
-/*.hidden {*/
-/*  display: none;*/
-/*}*/
+.hidden {
+  display: none;
+}
 
 .while-loading {
     opacity: .5;

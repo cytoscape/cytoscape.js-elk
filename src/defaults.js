@@ -3,7 +3,7 @@ import Tippy from 'tippy.js';
 import { generateGetBoundingClientRect } from './assign';
 
 // tooltip helper:
-let tip, selectedNodeFromTip, cytoLayout, isLoading = false;
+let tip, selectedNodeFromTip, cytoLayout, isLoading = true;
 
 /**
  * When playing around with the layout, the tooltips were not being destroyed automatically. Therefore, we must remove them manually.
@@ -116,10 +116,13 @@ const tapListenerForCollapsing = (evt) => {
 
 const freezeUI = (freeze, cy) => {
   isLoading = freeze;
-  if (freeze) {
-    cy.container().classList.add('while-loading');
+  const loadingMsgContainer = document.getElementById('loading-msg');
+  if (isLoading) {
+    loadingMsgContainer.classList.remove('hidden'); // show the msg container.
+    cy.container().classList.add('while-loading'); // gray out the tree
   } else {
-    cy.container().classList.remove('while-loading');
+    loadingMsgContainer.classList.add('hidden'); // hide the msg container
+    cy.container().classList.remove('while-loading'); // restore the color of the tree.
   }
 };
 
