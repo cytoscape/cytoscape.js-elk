@@ -2,13 +2,28 @@ import Tippy from 'tippy.js';
 import { generateGetBoundingClientRect } from './assign';
 
 // tooltip helper:
-let tip, selectedNodeFromTip;
+let tip, selectedNodeFromTip, cytoLayout;
 
 const removeTip = () => {
   if (tip) {
     // remove the older tooltip, so we can render the new one.
     tip.destroy();
   }
+  tip = undefined;
+};
+
+const setAndRefreshLayout = (cy) => {
+  removeTip();
+  selectedNodeFromTip = undefined;
+  cy.nodes().removeListener('mouseover');
+  if (cytoLayout) {
+    cytoLayout.stop();
+    // cy.nodes().removeAllListeners();
+    // cy.removeAllListeners();
+  } else {
+    cytoLayout = cy.makeLayout(cy.options().layout);
+  }
+  cytoLayout.run();
 };
 
 const createHtmlForTip = ({ _private: { data } }) => {
@@ -35,42 +50,44 @@ const isEmpty = (param) => {
   return !param || param.length === 0;
 };
 
+const isLeafNode = (node) => {
+  return node.successors().length === 0;
+};
+
 const tapListenerForUnCollapsing = (evt) => {
-  const { cy } = evt;
   evt.stopPropagation();
   evt.preventDefault();
-  const nodeClicked = evt.target;
+  const { target: nodeClicked } = evt;
   const collapseSuccessors = nodeClicked.data('collapseSuccessors');
   if (!isEmpty(collapseSuccessors)) {
-    nodeClicked.removeListener('tap');
     // you have to un-collapse the node.
+    const { cy } = evt;
+    nodeClicked.removeListener('tap');
     nodeClicked.data('collapseSuccessors', []);
     collapseSuccessors.removeStyle('display');
     nodeClicked.on('tap', tapListenerForCollapsing);
+    setAndRefreshLayout(cy);
   }
-  // refreshLayout(false);
-  // cy.reset();
-  cy.center();
-  cy.fit();
 };
 
 const tapListenerForCollapsing = (evt) => {
-  const { cy } = evt;
   evt.stopPropagation();
   evt.preventDefault();
-  const nodeClicked = evt.target;
+  const { target: nodeClicked } = evt;
+  if (isLeafNode(nodeClicked)) {
+    // no need of collapsing it as we can't collapse leaf nodes.
+    return;
+  }
   const collapseSuccessors = nodeClicked.data('collapseSuccessors');
   if (isEmpty(collapseSuccessors)) {
-    nodeClicked.removeListener('tap');
     // we're collapsing the nodes.
+    const { cy } = evt;
+    nodeClicked.removeListener('tap');
     nodeClicked.successors().style('display', 'none');
     nodeClicked.data('collapseSuccessors', nodeClicked.successors());
     nodeClicked.on('tap', tapListenerForUnCollapsing);
+    setAndRefreshLayout(cy);
   }
-  // refreshLayout(false);
-  // cy.reset();
-  cy.center();
-  cy.fit();
 };
 
 const defaults = {
