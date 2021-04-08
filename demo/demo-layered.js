@@ -13,21 +13,21 @@ cytoscape({
   },
   style: [
     {
-      selector: 'node:selected',
+      selector: 'node[isCollapsed > 0]',
       style: {
         // label: 'data(id)',
         // 'font-size': '0.5em',
-        'background-color': '#eeff00',
-        'background-opacity': '0.5',
+        'background-color': '#faff79',
+        // 'background-opacity': '0.5',
         // 'background-blacken': '0.5',
         'border-width': '1',
-        'border-style': 'solid',
-        'border-color': 'red',
+        // 'border-style': 'solid',
+        // 'border-color': 'black',
       },
 
     },
     {
-      selector: 'node',
+      selector: 'node[isCollapsed != 1]',
       style: {
         // label: 'data(name)',
         'font-size': '0.5em',
