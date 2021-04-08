@@ -3,16 +3,24 @@ body {
   font-size: 14px;
 }
 
+.tree-container{
+  margin: auto;
+  width: 85%;
+  height: 95%;
+  border: 3px solid green;
+  padding: 0;
+}
+
 #cy {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  right: 0;
+  /*position: absolute; */
   z-index: 10;
-  /*width: 90%;*/
-  /*height: 90%;*/
   border: 1px solid black;
+  height: 100%;
+  width: 100%;
+}
+
+#loading-msg {
+  margin: auto;
 }
 
 #box, #loading-msg {
@@ -30,7 +38,7 @@ body {
 
 .center {
   left: 50%;
-  top: 50%;
+  top: 30%;
 }
 
 #demos {
