@@ -3,7 +3,7 @@ import Tippy from 'tippy.js';
 import { generateGetBoundingClientRect } from './assign';
 
 // tooltip helper:
-let tip, selectedNodeFromTip, cytoLayout, isLoading = true;
+let tip, selectedNodeFromTip, cytoLayout, isLoading = true, firstTimeRendering = true;
 
 /**
  * When playing around with the layout, the tooltips were not being destroyed automatically. Therefore, we must remove them manually.
@@ -82,7 +82,6 @@ const tapListenerForUnCollapsing = (evt) => {
     // you have to un-collapse the node.
     const { cy } = evt;
     freezeUI(true, cy);
-    // nodeClicked.removeListener('tap');
     nodeClicked.data('collapseSuccessors', []);
     nodeClicked.data('isCollapsed', 0);
     collapseSuccessors.style('display', 'element');
@@ -108,7 +107,6 @@ const tapListenerForCollapsing = (evt) => {
     // we're collapsing the nodes.
     const { cy } = evt;
     freezeUI(true, cy);
-    // nodeClicked.removeListener('tap');
     nodeClicked.successors().style('display', 'none');
     nodeClicked.data('isCollapsed', 1);
     nodeClicked.data('collapseSuccessors', nodeClicked.successors());
@@ -178,6 +176,15 @@ const defaults = {
 
     // As we can call the layout from here, we have to restore the proper tap listener.
     cy.nodes().forEach((node) =>{
+      if (firstTimeRendering && (node.hasClass('failure') || node.hasClass('unknown'))) {
+        // we want to collapse all the nodes that has the failure or unknown class.
+        // This is required only when rendering for the first time the tree.
+        node.successors().style('display', 'none');
+        // if we want, we can comment the following line and not blacken the background of the node. It will be changed to isCollapsed=1,
+        // when the user actually clicks on the node in the UI.
+        node.data('isCollapsed', 1);
+        node.data('collapseSuccessors', node.successors());
+      }
       if (!isEmpty(node.data('collapseSuccessors'))) {
         node.on('tap', tapListenerForUnCollapsing);
       } else {
@@ -189,6 +196,7 @@ const defaults = {
       removeTip();
     });
     freezeUI(false, cy);
+    firstTimeRendering = false;
   }, // Callback on layoutready
   stop: undefined, // Callback on layoutstop
   elk: {
