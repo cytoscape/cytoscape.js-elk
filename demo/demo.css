@@ -21,24 +21,26 @@ body {
 
 #loading-msg {
   margin: auto;
+  position: relative;
+  /*width: 100%;*/
+  text-align: center;
+  top: 50%;
 }
 
 #box, #loading-msg {
   font-size: 1em;
   font-weight: bold;
   z-index: 50;
-  position: absolute;
+}
+
+#box {
   margin: 0;
+  position: absolute;
 }
 
 .top-left {
   left: 0.5em;
   top: 0.5em;
-}
-
-.center {
-  left: 50%;
-  top: 30%;
 }
 
 #demos {
