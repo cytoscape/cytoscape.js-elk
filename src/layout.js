@@ -58,6 +58,11 @@ const makeEdge = function (edge /*, options*/) {
     source: edge.data('source'),
     target: edge.data('target'),
   };
+  
+  const label = edge.style("label");
+  if (label) {
+    k['labels'] = [{text: label}];
+  }
 
   edge.scratch('elk', k);
 
