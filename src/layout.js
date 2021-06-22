@@ -114,20 +114,19 @@ const makeGraph = function (nodes, edges, options) {
   for (let i = 0; i < elkEdges.length; i++) {
     const k = elkEdges[i];
 
-    // put all edges in the top level for now
     // TODO does this cause issues in certain edgecases?
-    /*let e = k._cyEle;
+    let e = k._cyEle;
     let parentSrc = e.source().parent();
     let parentTgt = e.target().parent();
-    if ( false && parentSrc.nonempty() && parentTgt.nonempty() && parentSrc.same( parentTgt ) ){
+    if ( parentSrc.nonempty() && parentTgt.nonempty() && parentSrc.same( parentTgt ) ){
       let kp = elkEleLookup[ parentSrc.id() ];
 
       kp.edges = kp.edges || [];
 
       kp.edges.push( k );
-    } else {*/
-    graph.edges.push(k);
-    //}
+    } else {
+      graph.edges.push(k);
+    }
   }
 
   return graph;
