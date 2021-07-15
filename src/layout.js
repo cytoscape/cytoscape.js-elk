@@ -160,11 +160,9 @@ class Layout {
 
     const elk = new ELK();
     const graph = makeGraph(nodes, edges, options);
-
+    graph['layoutOptions'] = options.elk
     elk
-      .layout(graph, {
-        layoutOptions: options.elk,
-      })
+      .layout(graph)
       .then(() => {
         nodes
           .filter((n) => !n.isParent())
