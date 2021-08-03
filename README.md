@@ -81,6 +81,8 @@ var options = {
 cy.layout( options ).run();
 ```
 
+You can set layout options per node by adding a `layoutOptions` key to the data of the node. This is useful for tweaking the layout of a particular node, like for [setting its partition](https://www.eclipse.org/elk/reference/options/org-eclipse-elk-partitioning-partition.html) for the layered layout
+
 The set of  `options.elk.algorithm` values that are supported by ELK.js follows:
 
 - `box` : ([Demo](https://cytoscape.github.io/cytoscape.js-elk/?demo=box)) ([Docs](https://www.eclipse.org/elk/reference/algorithms/org-eclipse-elk-box.html)) Pack the nodes like boxes.
