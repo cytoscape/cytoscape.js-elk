@@ -3,7 +3,7 @@ import Tippy from 'tippy.js';
 import { generateGetBoundingClientRect } from './assign';
 
 // tooltip helper:
-let tip, selectedNodeFromTip, cytoLayout, isLoading = true, firstTimeRendering = true;
+let tip, selectedNodeFromTip, cytoLayout, isLoading = true, isPlayingWithTheTree = false;
 
 /**
  * When playing around with the layout, the tooltips were not being destroyed automatically. Therefore, we must remove them manually.
@@ -71,6 +71,7 @@ const isLeafNode = (node) => {
 };
 
 const tapListenerForUnCollapsing = (evt) => {
+  isPlayingWithTheTree = true;
   evt.stopPropagation();
   evt.preventDefault();
   if (isLoading) {
@@ -92,6 +93,7 @@ const tapListenerForUnCollapsing = (evt) => {
 };
 
 const tapListenerForCollapsing = (evt) => {
+  isPlayingWithTheTree = true;
   evt.stopPropagation();
   evt.preventDefault();
   if (isLoading) {
@@ -125,13 +127,77 @@ const freezeUI = (freeze, cy) => {
     cy.container().classList.remove('while-loading'); // restore the color of the tree.
   }
 };
+/**
+ * Checks on the three whether if there is at least one node marked with the longest-successful-path class. If so, it means the path has
+ * been already marked.
+ */
+const isDeepestSuccessfulPathAlreadyMarked = (cy) => {
+  return !isEmpty(cy.nodes().filter('.longest-successful-path'));
+};
+
+const findTheDeepestSuccessfulLevel = (cy) => {
+  let deepestLevel = 0;
+  const successfulNodes = cy.nodes().filter('.success');
+  if (isEmpty(successfulNodes)) {
+    return deepestLevel;
+  }
+  successfulNodes.forEach((successNode) => {
+    const beforeMe = successNode.predecessors('node');
+    if (isEmpty(beforeMe)) {
+      return;
+    }
+    // add 1 to count the node it self.
+    const currentLevel = beforeMe.length + 1;
+    if (deepestLevel < currentLevel) {
+      deepestLevel = currentLevel;
+    }
+  });
+  return deepestLevel;
+};
+
+const getDeepestLeaveIds = (cy, deepestLevel) => {
+  const successfulNodes = cy.nodes().filter('.success');
+  const nodeIds = [];
+  if (isEmpty(successfulNodes)) {
+    return nodeIds;
+  }
+  successfulNodes.forEach((successNode) => {
+    const beforeMe = successNode.predecessors('node');
+    if (isEmpty(beforeMe)) {
+      return;
+    }
+    // add 1 to count the node it self.
+    const currentLevel = beforeMe.length + 1;
+    if (deepestLevel === currentLevel) {
+      nodeIds.push(successNode.data().id);
+    }
+  });
+  return nodeIds;
+};
+
+const markTheDeepestPath = (cy, maxId) => {
+  const theMax = cy.$(`#${maxId}`);
+  const predecessors = theMax.predecessors('node');
+  theMax.removeClass('success');
+  predecessors.removeClass('success');
+  theMax.addClass('longest-successful-path');
+  predecessors.addClass('longest-successful-path');
+};
+
+const collapseNode = (node) => {
+  node.successors().style('display', 'none');
+  // if we want, we can comment the following line and not blacken the background of the node. It will be changed to isCollapsed=1,
+  // when the user actually clicks on the node in the UI.
+  node.data('isCollapsed', 1);
+  node.data('collapseSuccessors', node.successors());
+};
 
 const defaults = {
   nodeDimensionsIncludeLabels: false, // Boolean which changes whether label dimensions are included when calculating node dimensions
   fit: true, // Whether to fit
   padding: 20, // Padding on fit
   animate: false, // Whether to transition the node positions
-  animateFilter: function () {
+  animateFilter: function() {
     return false;
   }, // Whether to animate specific nodes when animation is on; non-animated nodes immediately go to their final positions
   animationDuration: 500, // Duration of animation in ms if enabled
@@ -174,16 +240,38 @@ const defaults = {
       tip.show();
     });
 
+    cytoLayout = undefined;
+    let canICollapseUnknown;
+    if (!isDeepestSuccessfulPathAlreadyMarked(cy)) {
+      // We want to show the longest/deepest successful path on the tree un-collapsed:
+      const deepestLevel = findTheDeepestSuccessfulLevel(cy);
+      // If a successful path has been marked, then the tree has been tested. We can proceed marking the unknown as well:
+      canICollapseUnknown = deepestLevel > 1;
+      const deepestNodes = getDeepestLeaveIds(cy, deepestLevel);
+      // In theory, only one successful node will be the longest, however, this logic is prepared for having 2 (or more) nodes at
+      // the same level and both paths (branches) will be marked:
+      deepestNodes.forEach((nodeId) => markTheDeepestPath(cy, nodeId));
+    } else {
+      canICollapseUnknown = true;
+    }
     // As we can call the layout from here, we have to restore the proper tap listener.
-    cy.nodes().forEach((node) =>{
-      if (firstTimeRendering && (node.hasClass('failure') || node.hasClass('unknown'))) {
-        // we want to collapse all the nodes that has the failure or unknown class.
-        // This is required only when rendering for the first time the tree.
-        node.successors().style('display', 'none');
-        // if we want, we can comment the following line and not blacken the background of the node. It will be changed to isCollapsed=1,
-        // when the user actually clicks on the node in the UI.
-        node.data('isCollapsed', 1);
-        node.data('collapseSuccessors', node.successors());
+    cy.nodes().forEach((node) => {
+      if (!isPlayingWithTheTree) {
+        if (node.hasClass('failure')) {
+          canICollapseUnknown = true; // It means the tree has been tested, therefore, we can collapse anything.
+          const successorsNodesToCollapse = node.neighborhood('node');
+          successorsNodesToCollapse.forEach((childNode, index) => {
+            if (index === 0) {
+              // Ignore the first one because it's the parent.
+              return;
+            }
+            // we want to collapse all the children nodes from this 'failed' one.
+            collapseNode(childNode);
+          });
+        } else if (canICollapseUnknown && node.hasClass('unknown')) {
+          // we want to collapse all the nodes that has the unknown class.
+          collapseNode(node);
+        }
       }
       if (!isEmpty(node.data('collapseSuccessors'))) {
         node.on('tap', tapListenerForUnCollapsing);
@@ -196,7 +284,6 @@ const defaults = {
       removeTip();
     });
     freezeUI(false, cy);
-    firstTimeRendering = false;
   }, // Callback on layoutready
   stop: undefined, // Callback on layoutstop
   elk: {

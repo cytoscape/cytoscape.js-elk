@@ -7,12 +7,10 @@ body {
   margin: auto;
   width: 85%;
   height: 100%;
-  /*border: 3px solid green;*/
   padding: 0;
 }
 
 #cy {
-  /*position: absolute; */
   z-index: 10;
   border: 1px solid black;
   height: 100%;
@@ -22,7 +20,6 @@ body {
 #loading-msg {
   margin: auto;
   position: relative;
-  /*width: 100%;*/
   text-align: center;
   top: 50%;
 }
@@ -47,9 +44,14 @@ body {
   padding: 0;
   margin: 0;
 }
+
 #demos li {
   display: inline;
   padding-right: 0.5em;
+}
+
+.tippy-box {
+  word-break: break-all;
 }
 
 .tippy-content {
