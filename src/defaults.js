@@ -48,18 +48,26 @@ const createHtmlForTip = ({ _private: { data } }) => {
 
     const rulePatterSplit = rulePattern.split('\n');
     for (const pattern of rulePatterSplit) {
-      rulePatterHtml += `<div class='menu-sub-content'><span class='pattern-value'>${pattern}</span></div>`;
+      const currentPattern = removeHTMLSpecialCharacters(pattern);
+      rulePatterHtml += `<div class='menu-sub-content'><span class='pattern-value'>${currentPattern}</span></div>`;
     }
   }
+  const pattern = removeHTMLSpecialCharacters(data.pattern)
   let baseHtml = `<div class="node-text wordwrap">
   <div class="menu-content"><b>Node ID:</b><span>${data.id}</span>
-  <div class="menu-content"><b>Pattern:</b><span>${data.pattern}</span>
+  <div class="menu-content"><b>Pattern:</b><span>${pattern}</span>
   </div>`;
   if (rulePatterHtml) {
     baseHtml += `<div class='menu-sub-content'><b>Rule Pattern</b></div>${rulePatterHtml}`;
   }
   return baseHtml;
 };
+
+const  removeHTMLSpecialCharacters = (str) => {
+  return str.replace(/[\u00A0-\u9999<>\&]/gim, (i) => {
+      return '&#' + i.charCodeAt(0) + ';';
+  });
+}
 
 const isEmpty = (param) => {
   return !param || param.length === 0;
