@@ -93,6 +93,8 @@ The set of  `options.elk.algorithm` values that are supported by ELK.js follows:
 
 See the [ELK.js documentation](https://github.com/OpenKieler/elkjs) and the [ELK algorithm options documentation](https://www.eclipse.org/elk/reference/algorithms.html) for more information.
 
+* Please note that setting `elk.edgeRouting` option to `ORTHOGONAL`, `POLYLINE` or `SPLINES` in `layered` layout style changes the style of the edges included in the layout to support bend points. The default option value `UNDEFINED`, however, uses the existing style of the edges.
+
 ## Build targets
 
 * `npm run test` : Run Mocha tests in `./test`
