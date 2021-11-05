@@ -7,15 +7,15 @@
 		exports["cytoscapeElk"] = factory(require("elkjs"));
 	else
 		root["cytoscapeElk"] = factory(root["ELK"]);
-})(this, function(__WEBPACK_EXTERNAL_MODULE__434__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE__245__) {
 return /******/ (function() { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 434:
+/***/ 245:
 /***/ (function(module) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE__434__;
+module.exports = __WEBPACK_EXTERNAL_MODULE__245__;
 
 /***/ })
 
@@ -27,8 +27,9 @@ module.exports = __WEBPACK_EXTERNAL_MODULE__434__;
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
 /******/ 		// Check if module is in cache
-/******/ 		if(__webpack_module_cache__[moduleId]) {
-/******/ 			return __webpack_module_cache__[moduleId].exports;
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
 /******/ 		}
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = __webpack_module_cache__[moduleId] = {
@@ -85,7 +86,7 @@ __webpack_require__.d(__webpack_exports__, {
 });
 
 // EXTERNAL MODULE: external {"commonjs":"elkjs","commonjs2":"elkjs","amd":"elkjs","root":"ELK"}
-var external_commonjs_elkjs_commonjs2_elkjs_amd_elkjs_root_ELK_ = __webpack_require__(434);
+var external_commonjs_elkjs_commonjs2_elkjs_amd_elkjs_root_ELK_ = __webpack_require__(245);
 var external_commonjs_elkjs_commonjs2_elkjs_amd_elkjs_root_ELK_default = /*#__PURE__*/__webpack_require__.n(external_commonjs_elkjs_commonjs2_elkjs_amd_elkjs_root_ELK_);
 ;// CONCATENATED MODULE: ./src/assign.js
 // Simple, internal Object.assign() polyfill for options objects etc.
@@ -142,17 +143,161 @@ var defaults = {
 
 };
 /* harmony default export */ var src_defaults = (defaults);
-;// CONCATENATED MODULE: ./src/layout.js
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+;// CONCATENATED MODULE: ./src/processResult.js
+/**
+  This file includes functions to get node positions and
+  process edge information to make use of bend points if available
+*/
 
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+/** functions required to convert bend points to segment/control points **/
+var getSrcTgtPointsAndTangents = function getSrcTgtPointsAndTangents(edge, options) {
+  var e = edge.scratch('elk');
+  var sourceNode = options.cy.getElementById(e.source);
+  var targetNode = options.cy.getElementById(e.target);
+  var srcDims = sourceNode.layoutDimensions(options);
+  var tgtDims = targetNode.layoutDimensions(options);
+  var tgtPosition = targetNode.position();
+  var srcPosition = sourceNode.position();
+  var srcPoint = {
+    x: sourceNode.scratch('elk').x + srcDims.w / 2,
+    y: sourceNode.scratch('elk').y + srcDims.h / 2
+  };
+  var tgtPoint = {
+    x: targetNode.scratch('elk').x + tgtDims.w / 2,
+    y: targetNode.scratch('elk').y + tgtDims.h / 2
+  };
+  var m1 = (tgtPoint.y - srcPoint.y) / (tgtPoint.x - srcPoint.x);
+  var m2 = -1 / m1;
+  return {
+    m1: m1,
+    m2: m2,
+    srcPoint: srcPoint,
+    tgtPoint: tgtPoint
+  };
+};
 
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+var getIntersection = function getIntersection(edge, point, srcTgtPointsAndTangents) {
+  if (srcTgtPointsAndTangents === undefined) {
+    srcTgtPointsAndTangents = getSrcTgtPointsAndTangents(edge);
+  }
+
+  var srcPoint = srcTgtPointsAndTangents.srcPoint;
+  var tgtPoint = srcTgtPointsAndTangents.tgtPoint;
+  var m1 = srcTgtPointsAndTangents.m1;
+  var m2 = srcTgtPointsAndTangents.m2;
+  var intersectX;
+  var intersectY;
+
+  if (m1 == Infinity || m1 == -Infinity) {
+    intersectX = srcPoint.x;
+    intersectY = point.y;
+  } else if (m1 == 0) {
+    intersectX = point.x;
+    intersectY = srcPoint.y;
+  } else {
+    var a1 = srcPoint.y - m1 * srcPoint.x;
+    var a2 = point.y - m2 * point.x;
+    intersectX = (a2 - a1) / (m1 - m2);
+    intersectY = m1 * intersectX + a1;
+  } //Intersection point is the intersection of the lines passing through the nodes and
+  //passing through the bend or control point and perpendicular to the other line
 
 
+  var intersectionPoint = {
+    x: intersectX,
+    y: intersectY
+  };
+  return intersectionPoint;
+};
 
+var getLineDirection = function getLineDirection(srcPoint, tgtPoint) {
+  if (srcPoint.y == tgtPoint.y && srcPoint.x < tgtPoint.x) {
+    return 1;
+  }
 
-var elkOverrides = {};
+  if (srcPoint.y < tgtPoint.y && srcPoint.x < tgtPoint.x) {
+    return 2;
+  }
+
+  if (srcPoint.y < tgtPoint.y && srcPoint.x == tgtPoint.x) {
+    return 3;
+  }
+
+  if (srcPoint.y < tgtPoint.y && srcPoint.x > tgtPoint.x) {
+    return 4;
+  }
+
+  if (srcPoint.y == tgtPoint.y && srcPoint.x > tgtPoint.x) {
+    return 5;
+  }
+
+  if (srcPoint.y > tgtPoint.y && srcPoint.x > tgtPoint.x) {
+    return 6;
+  }
+
+  if (srcPoint.y > tgtPoint.y && srcPoint.x == tgtPoint.x) {
+    return 7;
+  }
+
+  return 8; //if srcPoint.y > tgtPoint.y and srcPoint.x < tgtPoint.x
+};
+
+var convertToRelativePosition = function convertToRelativePosition(edge, point, srcTgtPointsAndTangents) {
+  if (srcTgtPointsAndTangents === undefined) {
+    srcTgtPointsAndTangents = getSrcTgtPointsAndTangents(edge);
+  }
+
+  var intersectionPoint = getIntersection(edge, point, srcTgtPointsAndTangents);
+  var intersectX = intersectionPoint.x;
+  var intersectY = intersectionPoint.y;
+  var srcPoint = srcTgtPointsAndTangents.srcPoint;
+  var tgtPoint = srcTgtPointsAndTangents.tgtPoint;
+  var weight;
+
+  if (intersectX != srcPoint.x) {
+    weight = (intersectX - srcPoint.x) / (tgtPoint.x - srcPoint.x);
+  } else if (intersectY != srcPoint.y) {
+    weight = (intersectY - srcPoint.y) / (tgtPoint.y - srcPoint.y);
+  } else {
+    weight = 0;
+  }
+
+  var distance = Math.sqrt(Math.pow(intersectY - point.y, 2) + Math.pow(intersectX - point.x, 2)); //Get the direction of the line form source point to target point
+
+  var direction1 = getLineDirection(srcPoint, tgtPoint); //Get the direction of the line from intesection point to the point
+
+  var direction2 = getLineDirection(intersectionPoint, point); //If the difference is not -2 and not 6 then the direction of the distance is negative
+
+  if (direction1 - direction2 != -2 && direction1 - direction2 != 6) {
+    if (distance != 0) distance = -1 * distance;
+  }
+
+  return {
+    weight: weight,
+    distance: distance
+  };
+};
+
+var convertToRelativePositions = function convertToRelativePositions(edge, anchorPoints, options) {
+  var srcTgtPointsAndTangents = getSrcTgtPointsAndTangents(edge, options);
+  var weights = [];
+  var distances = [];
+
+  for (var i = 0; anchorPoints && i < anchorPoints.length; i++) {
+    var anchor = anchorPoints[i];
+    var relativeAnchorPosition = convertToRelativePosition(edge, anchor, srcTgtPointsAndTangents);
+    weights.push(relativeAnchorPosition.weight);
+    distances.push(relativeAnchorPosition.distance);
+  }
+
+  return {
+    weights: weights,
+    distances: distances
+  };
+};
+/**  End of section **/
+//  get node position
+
 
 var getPos = function getPos(ele, options) {
   var dims = ele.layoutDimensions(options);
@@ -174,7 +319,81 @@ var getPos = function getPos(ele, options) {
   p.x += dims.w / 2;
   p.y += dims.h / 2;
   return p;
+}; //  process edge to add required information for its new style
+
+
+var processEdge = function processEdge(edge, options) {
+  var e = edge.scratch('elk');
+  var eInfo = e.sections[0];
+
+  if (options.elk['elk.edgeRouting'] == 'ORTHOGONAL' || options.elk['elk.edgeRouting'] == 'POLYLINE') {
+    if (eInfo.bendPoints) {
+      edge.data('elkCurveStyle', 'segments');
+      edge.data('elkEdgeDistances', 'node-position');
+      var relativePositions = convertToRelativePositions(edge, eInfo.bendPoints, options);
+      edge.data('elkBendPointDistances', relativePositions.distances);
+      edge.data('elkBendPointWeights', relativePositions.weights);
+    } else {
+      edge.data('elkCurveStyle', 'straight');
+      edge.data('elkEdgeDistances', 'node-position');
+      edge.data('elkBendPointDistances', []);
+      edge.data('elkBendPointWeights', []);
+    }
+
+    var sourcePos = getPos(options.cy.getElementById(e.source), options);
+    var targetPos = getPos(options.cy.getElementById(e.target), options);
+    edge.data('elkSourceEndpoint', [eInfo.startPoint.x - sourcePos.x, eInfo.startPoint.y - sourcePos.y]);
+    edge.data('elkTargetEndpoint', [eInfo.endPoint.x - targetPos.x, eInfo.endPoint.y - targetPos.y]);
+
+    if (!edge.hasClass('elk-edge')) {
+      edge.addClass('elk-edge');
+    }
+  } else if (options.elk['elk.edgeRouting'] == 'SPLINES') {
+    if (eInfo.bendPoints) {
+      edge.data('elkCurveStyle', 'unbundled-bezier');
+      edge.data('elkEdgeDistances', 'node-position');
+      eInfo.bendPoints.shift();
+
+      var _relativePositions = convertToRelativePositions(edge, eInfo.bendPoints, options);
+
+      edge.data('elkBendPointDistances', _relativePositions.distances);
+      edge.data('elkBendPointWeights', _relativePositions.weights);
+    } else {
+      edge.data('elkCurveStyle', 'straight');
+      edge.data('elkEdgeDistances', 'node-position');
+      edge.data('elkBendPointDistances', []);
+      edge.data('elkBendPointWeights', []);
+    }
+
+    var _sourcePos = getPos(options.cy.getElementById(e.source), options);
+
+    var _targetPos = getPos(options.cy.getElementById(e.target), options);
+
+    edge.data('elkSourceEndpoint', [eInfo.startPoint.x - _sourcePos.x, eInfo.startPoint.y - _sourcePos.y]);
+    edge.data('elkTargetEndpoint', [eInfo.endPoint.x - _targetPos.x, eInfo.endPoint.y - _targetPos.y]);
+
+    if (!edge.hasClass('elk-edge')) {
+      edge.addClass('elk-edge');
+    }
+  } else {
+    edge.removeClass('elk-edge');
+    edge.removeData("elkCurveStyle elkEdgeDistances elkSourceEndpoint elkTargetEndpoint elkBendPointDistances elkBendPointWeights");
+  }
 };
+
+
+;// CONCATENATED MODULE: ./src/layout.js
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+
+
+
+
+var elkOverrides = {};
 
 var makeNode = function makeNode(node, options) {
   var k = {
@@ -281,6 +500,29 @@ var Layout = /*#__PURE__*/function () {
     this.options.elk = src_assign({
       aspectRatio: cy.width() / cy.height()
     }, src_defaults.elk, elkOptions, elkOverrides);
+
+    if (options.elk.algorithm == "layered") {
+      var isElkEdgeStyleExist = false;
+      cy.json().style.forEach(function (style) {
+        if (style.selector == '.elk-edge') {
+          isElkEdgeStyleExist = true;
+        }
+      });
+
+      if (!isElkEdgeStyleExist) {
+        // define elk-edge css class
+        cy.style().selector('.elk-edge').css({
+          'curve-style': 'data(elkCurveStyle)',
+          'edge-distances': 'data(elkEdgeDistances)',
+          'source-endpoint': 'data(elkSourceEndpoint)',
+          'target-endpoint': 'data(elkTargetEndpoint)',
+          'segment-distances': 'data(elkBendPointDistances)',
+          'segment-weights': 'data(elkBendPointWeights)',
+          'control-point-distances': 'data(elkBendPointDistances)',
+          'control-point-weights': 'data(elkBendPointWeights)'
+        });
+      }
+    }
   }
 
   _createClass(Layout, [{
@@ -293,14 +535,19 @@ var Layout = /*#__PURE__*/function () {
       var edges = eles.edges();
       var elk = new (external_commonjs_elkjs_commonjs2_elkjs_amd_elkjs_root_ELK_default())();
       var graph = makeGraph(nodes, edges, options);
-      elk.layout(graph, {
-        layoutOptions: options.elk
-      }).then(function () {
+      graph['layoutOptions'] = options.elk;
+      elk.layout(graph).then(function () {
         nodes.filter(function (n) {
           return !n.isParent();
         }).layoutPositions(layout, options, function (n) {
           return getPos(n, options);
         });
+
+        if (options.elk.algorithm == "layered") {
+          edges.forEach(function (e) {
+            processEdge(e, options);
+          });
+        }
       });
       return this;
     }
@@ -340,7 +587,7 @@ if (typeof cytoscape !== 'undefined') {
 
 /* harmony default export */ var src = (register);
 }();
-__webpack_exports__ = __webpack_exports__.default;
+__webpack_exports__ = __webpack_exports__["default"];
 /******/ 	return __webpack_exports__;
 /******/ })()
 ;

@@ -1,32 +1,9 @@
 import ELK from 'elkjs/lib/elk.bundled.js';
 import assign from './assign';
 import defaults from './defaults';
+import { getPos, processEdge } from './processResult'
 
 const elkOverrides = {};
-
-const getPos = function (ele, options) {
-  const dims = ele.layoutDimensions(options);
-  let parent = ele.parent();
-  const k = ele.scratch('elk');
-
-  const p = {
-    x: k.x,
-    y: k.y,
-  };
-
-  while (parent.nonempty()) {
-    const kp = parent.scratch('elk');
-    p.x += kp.x;
-    p.y += kp.y;
-    parent = parent.parent();
-  }
-
-  // elk considers a node position to be its top-left corner, while cy is the centre
-  p.x += dims.w / 2;
-  p.y += dims.h / 2;
-
-  return p;
-};
 
 const makeNode = function (node, options) {
   const k = {
@@ -148,6 +125,29 @@ class Layout {
       elkOptions,
       elkOverrides
     );
+
+    if (options.elk.algorithm == "layered") {
+      let isElkEdgeStyleExist = false;
+      cy.json().style.forEach(function(style){
+        if(style.selector == '.elk-edge') {
+          isElkEdgeStyleExist = true;
+        }
+      })
+
+      if (!isElkEdgeStyleExist) {
+        // define elk-edge css class
+        cy.style().selector('.elk-edge').css({
+          'curve-style': 'data(elkCurveStyle)',
+          'edge-distances': 'data(elkEdgeDistances)',
+          'source-endpoint': 'data(elkSourceEndpoint)',
+          'target-endpoint': 'data(elkTargetEndpoint)',
+          'segment-distances': 'data(elkBendPointDistances)',
+          'segment-weights': 'data(elkBendPointWeights)',
+          'control-point-distances': 'data(elkBendPointDistances)',
+          'control-point-weights': 'data(elkBendPointWeights)'
+        });
+      }
+    }
   }
 
   run() {
@@ -167,6 +167,11 @@ class Layout {
         nodes
           .filter((n) => !n.isParent())
           .layoutPositions(layout, options, (n) => getPos(n, options));
+        if (options.elk.algorithm == "layered") {
+          edges.forEach((e) => {
+            processEdge(e, options);
+          });
+        }
       });
 
     return this;
