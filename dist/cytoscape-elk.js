@@ -549,7 +549,7 @@ var Layout = /*#__PURE__*/function () {
           if (options.changeStyleAutomatically) {
             // check whether edge.elk-edge selector exists or not
             var isElkEdgeStyleExist = false;
-            cy.json().style.forEach(function (style) {
+            options.cy.json().style.forEach(function (style) {
               if (style.selector == 'edge.elk-edge') {
                 isElkEdgeStyleExist = true;
               }
@@ -558,9 +558,9 @@ var Layout = /*#__PURE__*/function () {
             if (!isElkEdgeStyleExist) {
               var elkEdgeStyle = _this.style()[0];
 
-              cy.style().selector(elkEdgeStyle.selector).style(elkEdgeStyle.style).update();
+              options.cy.style().selector(elkEdgeStyle.selector).style(elkEdgeStyle.style).update();
             } else {
-              cy.style().update();
+              options.cy.style().update();
             }
           }
         }

@@ -176,21 +176,21 @@ class Layout {
             if(options.changeStyleAutomatically) {
               // check whether edge.elk-edge selector exists or not
               let isElkEdgeStyleExist = false;
-              cy.json().style.forEach(function(style){
+              options.cy.json().style.forEach(function(style){
                 if(style.selector == 'edge.elk-edge') {
                   isElkEdgeStyleExist = true;
                 }
               })            
-  
+
               if (!isElkEdgeStyleExist) {
                 let elkEdgeStyle = this.style()[0];
-                cy.style()
+                options.cy.style()
                   .selector(elkEdgeStyle.selector)
                   .style(elkEdgeStyle.style)            
                   .update();
               }
               else {
-                cy.style().update();
+                options.cy.style().update();
               }
             }
           }           
