@@ -75,8 +75,15 @@ var options = {
     // The main field to set is `algorithm`, which controls which particular
     // layout algorithm is used.
   },
+  changeStyleAutomatically: false, // Whether to change edge styles automatically based on 'elk.edgeRouting' option supported in 'layered' algorithm
   priority: function( edge ){ return null; }, // Edges with a non-nil value are skipped when geedy edge cycle breaking is enabled
 };
+
+// If the algorithm style is 'layered', then the layout has the capability of changing edge style and adding bend points appropriately 
+// based on the 'elk.edgeRouting' option. Algorithm adds 'elk-edge' class to each edge involved in the layout and
+// if 'changeStyleAutomatically' option is true, the styleheet defined for 'edge.elk-edge' selector is applied automatically by the layout.
+// If 'changeStyleAutomatically' option is false, user can get this stylesheet with the below function and apply it whenever he/she wants after the layout.
+cy.layout( options ).style(); // returns [{selector: 'edge.elk-edge', style: { 'curve-style': ..., and other properties related to edge style }}] 
 
 cy.layout( options ).run();
 ```
@@ -92,8 +99,6 @@ The set of  `options.elk.algorithm` values that are supported by ELK.js follows:
 - `stress` : ([Demo](https://cytoscape.github.io/cytoscape.js-elk/?demo=stress)) ([Docs](https://www.eclipse.org/elk/reference/algorithms/org-eclipse-elk-stress.html)) Apply a force-directed layout.
 
 See the [ELK.js documentation](https://github.com/OpenKieler/elkjs) and the [ELK algorithm options documentation](https://www.eclipse.org/elk/reference/algorithms.html) for more information.
-
-* Please note that setting `elk.edgeRouting` option to `ORTHOGONAL`, `POLYLINE` or `SPLINES` in `layered` layout style changes the style of the edges included in the layout to support bend points. The default option value `UNDEFINED`, however, uses the existing style of the edges.
 
 ## Build targets
 

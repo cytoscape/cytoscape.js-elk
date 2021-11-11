@@ -36,7 +36,17 @@ const makeEdge = function (edge /*, options*/) {
     target: edge.data('target'),
   };
 
-  edge.scratch('elk', k);
+  if (!edge.scratch('elk')) {
+    edge.scratch('elk', k);
+  }
+  else {
+    let e = edge.scratch('elk');
+    e._cyEle = edge;
+    e.id = edge.id();
+    e.source = edge.data('source');
+    e.target = edge.data('target');
+    return e;
+  }
 
   return k;
 };
@@ -125,29 +135,19 @@ class Layout {
       elkOptions,
       elkOverrides
     );
+  }
 
-    if (options.elk.algorithm == "layered") {
-      let isElkEdgeStyleExist = false;
-      cy.json().style.forEach(function(style){
-        if(style.selector == '.elk-edge') {
-          isElkEdgeStyleExist = true;
-        }
-      })
-
-      if (!isElkEdgeStyleExist) {
-        // define elk-edge css class
-        cy.style().selector('.elk-edge').css({
-          'curve-style': 'data(elkCurveStyle)',
-          'edge-distances': 'data(elkEdgeDistances)',
-          'source-endpoint': 'data(elkSourceEndpoint)',
-          'target-endpoint': 'data(elkTargetEndpoint)',
-          'segment-distances': 'data(elkBendPointDistances)',
-          'segment-weights': 'data(elkBendPointWeights)',
-          'control-point-distances': 'data(elkBendPointDistances)',
-          'control-point-weights': 'data(elkBendPointWeights)'
-        });
-      }
-    }
+  style() {
+    return [{selector: 'edge.elk-edge', style: {
+      'curve-style': (edge) => {return edge.scratch('elk')['elkCurveStyle']},
+      'edge-distances': (edge) => {return edge.scratch('elk')['elkEdgeDistances']},
+      'source-endpoint': (edge) => {return edge.scratch('elk')['elkSourceEndpoint']},
+      'target-endpoint': (edge) => {return edge.scratch('elk')['elkTargetEndpoint']},
+      'segment-distances': (edge) => {return edge.scratch('elk')['elkBendPointDistances']},
+      'segment-weights': (edge) => {return edge.scratch('elk')['elkBendPointWeights']},
+      'control-point-distances': (edge) => {return edge.scratch('elk')['elkBendPointDistances']},
+      'control-point-weights': (edge) => {return edge.scratch('elk')['elkBendPointWeights']}
+    }}];
   }
 
   run() {
@@ -163,15 +163,37 @@ class Layout {
     graph['layoutOptions'] = options.elk
     elk
       .layout(graph)
-      .then(() => {
+      .then(() => {       
         nodes
           .filter((n) => !n.isParent())
           .layoutPositions(layout, options, (n) => getPos(n, options));
-        if (options.elk.algorithm == "layered") {
-          edges.forEach((e) => {
-            processEdge(e, options);
-          });
-        }
+
+          if (options.elk.algorithm == "layered") {
+            edges.forEach((e) => {
+              processEdge(e, options);
+            });
+
+            if(options.changeStyleAutomatically) {
+              // check whether edge.elk-edge selector exists or not
+              let isElkEdgeStyleExist = false;
+              cy.json().style.forEach(function(style){
+                if(style.selector == 'edge.elk-edge') {
+                  isElkEdgeStyleExist = true;
+                }
+              })            
+  
+              if (!isElkEdgeStyleExist) {
+                let elkEdgeStyle = this.style()[0];
+                cy.style()
+                  .selector(elkEdgeStyle.selector)
+                  .style(elkEdgeStyle.style)            
+                  .update();
+              }
+              else {
+                cy.style().update();
+              }
+            }
+          }           
       });
 
     return this;

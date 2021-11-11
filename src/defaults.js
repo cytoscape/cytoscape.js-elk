@@ -20,6 +20,7 @@ const defaults = {
     // (see https://www.eclipse.org/elk/reference/algorithms.html)
     algorithm: undefined,
   },
+  changeStyleAutomatically: false, // Whether to change edge styles automatically based on 'elk.edgeRouting' option supported in 'layered' algorithm
   priority: function () {
     return null;
   }, // Edges with a non-nil value are skipped when geedy edge cycle breaking is enabled

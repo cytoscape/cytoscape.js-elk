@@ -5,20 +5,7 @@
 
 /** functions required to convert bend points to segment/control points **/
 
-const getSrcTgtPointsAndTangents = function (edge, options) {
-  let e = edge.scratch('elk');
-  let sourceNode = options.cy.getElementById(e.source);
-  let targetNode = options.cy.getElementById(e.target);
-
-  let srcDims = sourceNode.layoutDimensions(options);
-  let tgtDims = targetNode.layoutDimensions(options);
-  
-  let tgtPosition = targetNode.position();
-  let srcPosition = sourceNode.position();
-  
-  let srcPoint = {x: sourceNode.scratch('elk').x + srcDims.w / 2, y: sourceNode.scratch('elk').y + srcDims.h / 2};
-  let tgtPoint = {x: targetNode.scratch('elk').x + tgtDims.w / 2, y: targetNode.scratch('elk').y + tgtDims.h / 2};
-
+const getSrcTgtPointsAndTangents = function (srcPoint, tgtPoint) {
   let m1 = (tgtPoint.y - srcPoint.y) / (tgtPoint.x - srcPoint.x);
   let m2 = -1 / m1;
 
@@ -30,11 +17,7 @@ const getSrcTgtPointsAndTangents = function (edge, options) {
   };
 };
 
-const getIntersection = function(edge, point, srcTgtPointsAndTangents){
-  if (srcTgtPointsAndTangents === undefined) {
-    srcTgtPointsAndTangents = getSrcTgtPointsAndTangents(edge);
-  }
-
+const getIntersection = function(anchor, srcTgtPointsAndTangents){
   let srcPoint = srcTgtPointsAndTangents.srcPoint;
   let tgtPoint = srcTgtPointsAndTangents.tgtPoint;
   let m1 = srcTgtPointsAndTangents.m1;
@@ -45,15 +28,15 @@ const getIntersection = function(edge, point, srcTgtPointsAndTangents){
 
   if(m1 == Infinity || m1 == -Infinity){
     intersectX = srcPoint.x;
-    intersectY = point.y;
+    intersectY = anchor.y;
   }
   else if(m1 == 0){
-    intersectX = point.x;
+    intersectX = anchor.x;
     intersectY = srcPoint.y;
   }
   else {
     let a1 = srcPoint.y - m1 * srcPoint.x;
-    let a2 = point.y - m2 * point.x;
+    let a2 = anchor.y - m2 * anchor.x;
 
     intersectX = (a2 - a1) / (m1 - m2);
     intersectY = m1 * intersectX + a1;
@@ -94,12 +77,8 @@ const getLineDirection = function(srcPoint, tgtPoint){
   return 8; //if srcPoint.y > tgtPoint.y and srcPoint.x < tgtPoint.x
 };
 
-const convertToRelativePosition = function (edge, point, srcTgtPointsAndTangents) {
-  if (srcTgtPointsAndTangents === undefined) {
-    srcTgtPointsAndTangents = getSrcTgtPointsAndTangents(edge);
-  }
-  
-  let intersectionPoint = getIntersection(edge, point, srcTgtPointsAndTangents);
+const convertToRelativePosition = function (anchor, srcTgtPointsAndTangents) {
+  let intersectionPoint = getIntersection(anchor, srcTgtPointsAndTangents);
   let intersectX = intersectionPoint.x;
   let intersectY = intersectionPoint.y;
   
@@ -118,13 +97,13 @@ const convertToRelativePosition = function (edge, point, srcTgtPointsAndTangents
     weight = 0;
   }
   
-  let distance = Math.sqrt(Math.pow((intersectY - point.y), 2)
-      + Math.pow((intersectX - point.x), 2));
+  let distance = Math.sqrt(Math.pow((intersectY - anchor.y), 2)
+      + Math.pow((intersectX - anchor.x), 2));
   
   //Get the direction of the line form source point to target point
   let direction1 = getLineDirection(srcPoint, tgtPoint);
   //Get the direction of the line from intesection point to the point
-  let direction2 = getLineDirection(intersectionPoint, point);
+  let direction2 = getLineDirection(intersectionPoint, anchor);
   
   //If the difference is not -2 and not 6 then the direction of the distance is negative
   if(direction1 - direction2 != -2 && direction1 - direction2 != 6){
@@ -138,15 +117,15 @@ const convertToRelativePosition = function (edge, point, srcTgtPointsAndTangents
   };
 };
 
-const convertToRelativePositions = function (edge, anchorPoints, options) {
-  let srcTgtPointsAndTangents = getSrcTgtPointsAndTangents(edge, options);
+const convertToRelativePositions = function (anchorPoints, srcPoint, tgtPoint) {
+  let srcTgtPointsAndTangents = getSrcTgtPointsAndTangents(srcPoint, tgtPoint);
 
   let weights = [];
   let distances = [];
 
   for (let i = 0; anchorPoints && i < anchorPoints.length; i++) {
     let anchor = anchorPoints[i];
-    let relativeAnchorPosition = convertToRelativePosition(edge, anchor, srcTgtPointsAndTangents);
+    let relativeAnchorPosition = convertToRelativePosition(anchor, srcTgtPointsAndTangents);
 
     weights.push(relativeAnchorPosition.weight);
     distances.push(relativeAnchorPosition.distance);
@@ -190,54 +169,53 @@ const processEdge = function (edge, options) {
   let e = edge.scratch('elk');
   let eInfo = e.sections[0];
 
+  let sourcePos = getPos(options.cy.getElementById(e.source), options);
+  let targetPos = getPos(options.cy.getElementById(e.target), options);
+
   if (options.elk['elk.edgeRouting'] == 'ORTHOGONAL' || options.elk['elk.edgeRouting'] == 'POLYLINE') {
     if (eInfo.bendPoints) {
-      edge.data('elkCurveStyle', 'segments');
-      edge.data('elkEdgeDistances', 'node-position');
-      let relativePositions = convertToRelativePositions(edge, eInfo.bendPoints, options);
-      edge.data('elkBendPointDistances', relativePositions.distances);
-      edge.data('elkBendPointWeights', relativePositions.weights);
+      e['elkCurveStyle'] = 'segments';
+      e['elkEdgeDistances'] = 'node-position';
+      let relativePositions = convertToRelativePositions(eInfo.bendPoints, sourcePos, targetPos);
+      e['elkBendPointDistances'] = relativePositions.distances;
+      e['elkBendPointWeights'] = relativePositions.weights;
     }
     else {
-      edge.data('elkCurveStyle', 'straight');
-      edge.data('elkEdgeDistances', 'node-position');
-      edge.data('elkBendPointDistances', []);
-      edge.data('elkBendPointWeights', []);                   
+      e['elkCurveStyle'] = 'straight';
+      e['elkEdgeDistances'] = 'node-position';
+      e['elkBendPointDistances'] = [];
+      e['elkBendPointWeights'] = [];                   
     }
-    let sourcePos = getPos(options.cy.getElementById(e.source), options);
-    let targetPos = getPos(options.cy.getElementById(e.target), options);
-    edge.data('elkSourceEndpoint', [eInfo.startPoint.x - sourcePos.x, eInfo.startPoint.y - sourcePos.y]);
-    edge.data('elkTargetEndpoint', [eInfo.endPoint.x - targetPos.x, eInfo.endPoint.y - targetPos.y]);
+    e['elkSourceEndpoint'] = [eInfo.startPoint.x - sourcePos.x, eInfo.startPoint.y - sourcePos.y];
+    e['elkTargetEndpoint'] = [eInfo.endPoint.x - targetPos.x, eInfo.endPoint.y - targetPos.y];
     if (!edge.hasClass('elk-edge')) {
       edge.addClass('elk-edge');
     }     
   }
   else if (options.elk['elk.edgeRouting'] == 'SPLINES') {
     if (eInfo.bendPoints) {
-      edge.data('elkCurveStyle', 'unbundled-bezier');
-      edge.data('elkEdgeDistances', 'node-position');
+      e['elkCurveStyle'] = 'unbundled-bezier';
+      e['elkEdgeDistances'] = 'node-position';
       eInfo.bendPoints.shift();
-      let relativePositions = convertToRelativePositions(edge, eInfo.bendPoints, options);
-      edge.data('elkBendPointDistances', relativePositions.distances);
-      edge.data('elkBendPointWeights', relativePositions.weights);
+      let relativePositions = convertToRelativePositions(eInfo.bendPoints, sourcePos, targetPos);
+      e['elkBendPointDistances'] = relativePositions.distances;
+      e['elkBendPointWeights'] = relativePositions.weights;
     }
     else {
-      edge.data('elkCurveStyle', 'straight');
-      edge.data('elkEdgeDistances', 'node-position');
-      edge.data('elkBendPointDistances', []);
-      edge.data('elkBendPointWeights', []);                         
+      e['elkCurveStyle'] = 'straight';
+      e['elkEdgeDistances'] = 'node-position';
+      e['elkBendPointDistances'] = [];
+      e['elkBendPointWeights'] = [];                         
     }
-    let sourcePos = getPos(options.cy.getElementById(e.source), options);
-    let targetPos = getPos(options.cy.getElementById(e.target), options);
-    edge.data('elkSourceEndpoint', [eInfo.startPoint.x - sourcePos.x, eInfo.startPoint.y - sourcePos.y]);
-    edge.data('elkTargetEndpoint', [eInfo.endPoint.x - targetPos.x, eInfo.endPoint.y - targetPos.y]);
+    e['elkSourceEndpoint'] = [eInfo.startPoint.x - sourcePos.x, eInfo.startPoint.y - sourcePos.y];
+    e['elkTargetEndpoint'] = [eInfo.endPoint.x - targetPos.x, eInfo.endPoint.y - targetPos.y];
     if (!edge.hasClass('elk-edge')) {
       edge.addClass('elk-edge');
     }      
   }
   else {
     edge.removeClass('elk-edge');
-    edge.removeData("elkCurveStyle elkEdgeDistances elkSourceEndpoint elkTargetEndpoint elkBendPointDistances elkBendPointWeights")
+    edge.removeScratch('elk');
   }
 };
 

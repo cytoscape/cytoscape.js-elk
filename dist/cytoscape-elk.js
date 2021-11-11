@@ -137,6 +137,8 @@ var defaults = {
     // (see https://www.eclipse.org/elk/reference/algorithms.html)
     algorithm: undefined
   },
+  changeStyleAutomatically: false,
+  // Whether to change edge styles automatically based on 'elk.edgeRouting' option supported in 'layered' algorithm
   priority: function priority() {
     return null;
   } // Edges with a non-nil value are skipped when geedy edge cycle breaking is enabled
@@ -150,22 +152,7 @@ var defaults = {
 */
 
 /** functions required to convert bend points to segment/control points **/
-var getSrcTgtPointsAndTangents = function getSrcTgtPointsAndTangents(edge, options) {
-  var e = edge.scratch('elk');
-  var sourceNode = options.cy.getElementById(e.source);
-  var targetNode = options.cy.getElementById(e.target);
-  var srcDims = sourceNode.layoutDimensions(options);
-  var tgtDims = targetNode.layoutDimensions(options);
-  var tgtPosition = targetNode.position();
-  var srcPosition = sourceNode.position();
-  var srcPoint = {
-    x: sourceNode.scratch('elk').x + srcDims.w / 2,
-    y: sourceNode.scratch('elk').y + srcDims.h / 2
-  };
-  var tgtPoint = {
-    x: targetNode.scratch('elk').x + tgtDims.w / 2,
-    y: targetNode.scratch('elk').y + tgtDims.h / 2
-  };
+var getSrcTgtPointsAndTangents = function getSrcTgtPointsAndTangents(srcPoint, tgtPoint) {
   var m1 = (tgtPoint.y - srcPoint.y) / (tgtPoint.x - srcPoint.x);
   var m2 = -1 / m1;
   return {
@@ -176,11 +163,7 @@ var getSrcTgtPointsAndTangents = function getSrcTgtPointsAndTangents(edge, optio
   };
 };
 
-var getIntersection = function getIntersection(edge, point, srcTgtPointsAndTangents) {
-  if (srcTgtPointsAndTangents === undefined) {
-    srcTgtPointsAndTangents = getSrcTgtPointsAndTangents(edge);
-  }
-
+var getIntersection = function getIntersection(anchor, srcTgtPointsAndTangents) {
   var srcPoint = srcTgtPointsAndTangents.srcPoint;
   var tgtPoint = srcTgtPointsAndTangents.tgtPoint;
   var m1 = srcTgtPointsAndTangents.m1;
@@ -190,13 +173,13 @@ var getIntersection = function getIntersection(edge, point, srcTgtPointsAndTange
 
   if (m1 == Infinity || m1 == -Infinity) {
     intersectX = srcPoint.x;
-    intersectY = point.y;
+    intersectY = anchor.y;
   } else if (m1 == 0) {
-    intersectX = point.x;
+    intersectX = anchor.x;
     intersectY = srcPoint.y;
   } else {
     var a1 = srcPoint.y - m1 * srcPoint.x;
-    var a2 = point.y - m2 * point.x;
+    var a2 = anchor.y - m2 * anchor.x;
     intersectX = (a2 - a1) / (m1 - m2);
     intersectY = m1 * intersectX + a1;
   } //Intersection point is the intersection of the lines passing through the nodes and
@@ -242,12 +225,8 @@ var getLineDirection = function getLineDirection(srcPoint, tgtPoint) {
   return 8; //if srcPoint.y > tgtPoint.y and srcPoint.x < tgtPoint.x
 };
 
-var convertToRelativePosition = function convertToRelativePosition(edge, point, srcTgtPointsAndTangents) {
-  if (srcTgtPointsAndTangents === undefined) {
-    srcTgtPointsAndTangents = getSrcTgtPointsAndTangents(edge);
-  }
-
-  var intersectionPoint = getIntersection(edge, point, srcTgtPointsAndTangents);
+var convertToRelativePosition = function convertToRelativePosition(anchor, srcTgtPointsAndTangents) {
+  var intersectionPoint = getIntersection(anchor, srcTgtPointsAndTangents);
   var intersectX = intersectionPoint.x;
   var intersectY = intersectionPoint.y;
   var srcPoint = srcTgtPointsAndTangents.srcPoint;
@@ -262,11 +241,11 @@ var convertToRelativePosition = function convertToRelativePosition(edge, point, 
     weight = 0;
   }
 
-  var distance = Math.sqrt(Math.pow(intersectY - point.y, 2) + Math.pow(intersectX - point.x, 2)); //Get the direction of the line form source point to target point
+  var distance = Math.sqrt(Math.pow(intersectY - anchor.y, 2) + Math.pow(intersectX - anchor.x, 2)); //Get the direction of the line form source point to target point
 
   var direction1 = getLineDirection(srcPoint, tgtPoint); //Get the direction of the line from intesection point to the point
 
-  var direction2 = getLineDirection(intersectionPoint, point); //If the difference is not -2 and not 6 then the direction of the distance is negative
+  var direction2 = getLineDirection(intersectionPoint, anchor); //If the difference is not -2 and not 6 then the direction of the distance is negative
 
   if (direction1 - direction2 != -2 && direction1 - direction2 != 6) {
     if (distance != 0) distance = -1 * distance;
@@ -278,14 +257,14 @@ var convertToRelativePosition = function convertToRelativePosition(edge, point, 
   };
 };
 
-var convertToRelativePositions = function convertToRelativePositions(edge, anchorPoints, options) {
-  var srcTgtPointsAndTangents = getSrcTgtPointsAndTangents(edge, options);
+var convertToRelativePositions = function convertToRelativePositions(anchorPoints, srcPoint, tgtPoint) {
+  var srcTgtPointsAndTangents = getSrcTgtPointsAndTangents(srcPoint, tgtPoint);
   var weights = [];
   var distances = [];
 
   for (var i = 0; anchorPoints && i < anchorPoints.length; i++) {
     var anchor = anchorPoints[i];
-    var relativeAnchorPosition = convertToRelativePosition(edge, anchor, srcTgtPointsAndTangents);
+    var relativeAnchorPosition = convertToRelativePosition(anchor, srcTgtPointsAndTangents);
     weights.push(relativeAnchorPosition.weight);
     distances.push(relativeAnchorPosition.distance);
   }
@@ -325,59 +304,55 @@ var getPos = function getPos(ele, options) {
 var processEdge = function processEdge(edge, options) {
   var e = edge.scratch('elk');
   var eInfo = e.sections[0];
+  var sourcePos = getPos(options.cy.getElementById(e.source), options);
+  var targetPos = getPos(options.cy.getElementById(e.target), options);
 
   if (options.elk['elk.edgeRouting'] == 'ORTHOGONAL' || options.elk['elk.edgeRouting'] == 'POLYLINE') {
     if (eInfo.bendPoints) {
-      edge.data('elkCurveStyle', 'segments');
-      edge.data('elkEdgeDistances', 'node-position');
-      var relativePositions = convertToRelativePositions(edge, eInfo.bendPoints, options);
-      edge.data('elkBendPointDistances', relativePositions.distances);
-      edge.data('elkBendPointWeights', relativePositions.weights);
+      e['elkCurveStyle'] = 'segments';
+      e['elkEdgeDistances'] = 'node-position';
+      var relativePositions = convertToRelativePositions(eInfo.bendPoints, sourcePos, targetPos);
+      e['elkBendPointDistances'] = relativePositions.distances;
+      e['elkBendPointWeights'] = relativePositions.weights;
     } else {
-      edge.data('elkCurveStyle', 'straight');
-      edge.data('elkEdgeDistances', 'node-position');
-      edge.data('elkBendPointDistances', []);
-      edge.data('elkBendPointWeights', []);
+      e['elkCurveStyle'] = 'straight';
+      e['elkEdgeDistances'] = 'node-position';
+      e['elkBendPointDistances'] = [];
+      e['elkBendPointWeights'] = [];
     }
 
-    var sourcePos = getPos(options.cy.getElementById(e.source), options);
-    var targetPos = getPos(options.cy.getElementById(e.target), options);
-    edge.data('elkSourceEndpoint', [eInfo.startPoint.x - sourcePos.x, eInfo.startPoint.y - sourcePos.y]);
-    edge.data('elkTargetEndpoint', [eInfo.endPoint.x - targetPos.x, eInfo.endPoint.y - targetPos.y]);
+    e['elkSourceEndpoint'] = [eInfo.startPoint.x - sourcePos.x, eInfo.startPoint.y - sourcePos.y];
+    e['elkTargetEndpoint'] = [eInfo.endPoint.x - targetPos.x, eInfo.endPoint.y - targetPos.y];
 
     if (!edge.hasClass('elk-edge')) {
       edge.addClass('elk-edge');
     }
   } else if (options.elk['elk.edgeRouting'] == 'SPLINES') {
     if (eInfo.bendPoints) {
-      edge.data('elkCurveStyle', 'unbundled-bezier');
-      edge.data('elkEdgeDistances', 'node-position');
+      e['elkCurveStyle'] = 'unbundled-bezier';
+      e['elkEdgeDistances'] = 'node-position';
       eInfo.bendPoints.shift();
 
-      var _relativePositions = convertToRelativePositions(edge, eInfo.bendPoints, options);
+      var _relativePositions = convertToRelativePositions(eInfo.bendPoints, sourcePos, targetPos);
 
-      edge.data('elkBendPointDistances', _relativePositions.distances);
-      edge.data('elkBendPointWeights', _relativePositions.weights);
+      e['elkBendPointDistances'] = _relativePositions.distances;
+      e['elkBendPointWeights'] = _relativePositions.weights;
     } else {
-      edge.data('elkCurveStyle', 'straight');
-      edge.data('elkEdgeDistances', 'node-position');
-      edge.data('elkBendPointDistances', []);
-      edge.data('elkBendPointWeights', []);
+      e['elkCurveStyle'] = 'straight';
+      e['elkEdgeDistances'] = 'node-position';
+      e['elkBendPointDistances'] = [];
+      e['elkBendPointWeights'] = [];
     }
 
-    var _sourcePos = getPos(options.cy.getElementById(e.source), options);
-
-    var _targetPos = getPos(options.cy.getElementById(e.target), options);
-
-    edge.data('elkSourceEndpoint', [eInfo.startPoint.x - _sourcePos.x, eInfo.startPoint.y - _sourcePos.y]);
-    edge.data('elkTargetEndpoint', [eInfo.endPoint.x - _targetPos.x, eInfo.endPoint.y - _targetPos.y]);
+    e['elkSourceEndpoint'] = [eInfo.startPoint.x - sourcePos.x, eInfo.startPoint.y - sourcePos.y];
+    e['elkTargetEndpoint'] = [eInfo.endPoint.x - targetPos.x, eInfo.endPoint.y - targetPos.y];
 
     if (!edge.hasClass('elk-edge')) {
       edge.addClass('elk-edge');
     }
   } else {
     edge.removeClass('elk-edge');
-    edge.removeData("elkCurveStyle elkEdgeDistances elkSourceEndpoint elkTargetEndpoint elkBendPointDistances elkBendPointWeights");
+    edge.removeScratch('elk');
   }
 };
 
@@ -424,7 +399,18 @@ var makeEdge = function makeEdge(edge
     source: edge.data('source'),
     target: edge.data('target')
   };
-  edge.scratch('elk', k);
+
+  if (!edge.scratch('elk')) {
+    edge.scratch('elk', k);
+  } else {
+    var e = edge.scratch('elk');
+    e._cyEle = edge;
+    e.id = edge.id();
+    e.source = edge.data('source');
+    e.target = edge.data('target');
+    return e;
+  }
+
   return k;
 };
 
@@ -500,34 +486,46 @@ var Layout = /*#__PURE__*/function () {
     this.options.elk = src_assign({
       aspectRatio: cy.width() / cy.height()
     }, src_defaults.elk, elkOptions, elkOverrides);
-
-    if (options.elk.algorithm == "layered") {
-      var isElkEdgeStyleExist = false;
-      cy.json().style.forEach(function (style) {
-        if (style.selector == '.elk-edge') {
-          isElkEdgeStyleExist = true;
-        }
-      });
-
-      if (!isElkEdgeStyleExist) {
-        // define elk-edge css class
-        cy.style().selector('.elk-edge').css({
-          'curve-style': 'data(elkCurveStyle)',
-          'edge-distances': 'data(elkEdgeDistances)',
-          'source-endpoint': 'data(elkSourceEndpoint)',
-          'target-endpoint': 'data(elkTargetEndpoint)',
-          'segment-distances': 'data(elkBendPointDistances)',
-          'segment-weights': 'data(elkBendPointWeights)',
-          'control-point-distances': 'data(elkBendPointDistances)',
-          'control-point-weights': 'data(elkBendPointWeights)'
-        });
-      }
-    }
   }
 
   _createClass(Layout, [{
+    key: "style",
+    value: function style() {
+      return [{
+        selector: 'edge.elk-edge',
+        style: {
+          'curve-style': function curveStyle(edge) {
+            return edge.scratch('elk')['elkCurveStyle'];
+          },
+          'edge-distances': function edgeDistances(edge) {
+            return edge.scratch('elk')['elkEdgeDistances'];
+          },
+          'source-endpoint': function sourceEndpoint(edge) {
+            return edge.scratch('elk')['elkSourceEndpoint'];
+          },
+          'target-endpoint': function targetEndpoint(edge) {
+            return edge.scratch('elk')['elkTargetEndpoint'];
+          },
+          'segment-distances': function segmentDistances(edge) {
+            return edge.scratch('elk')['elkBendPointDistances'];
+          },
+          'segment-weights': function segmentWeights(edge) {
+            return edge.scratch('elk')['elkBendPointWeights'];
+          },
+          'control-point-distances': function controlPointDistances(edge) {
+            return edge.scratch('elk')['elkBendPointDistances'];
+          },
+          'control-point-weights': function controlPointWeights(edge) {
+            return edge.scratch('elk')['elkBendPointWeights'];
+          }
+        }
+      }];
+    }
+  }, {
     key: "run",
     value: function run() {
+      var _this = this;
+
       var layout = this;
       var options = this.options;
       var eles = options.eles;
@@ -547,6 +545,24 @@ var Layout = /*#__PURE__*/function () {
           edges.forEach(function (e) {
             processEdge(e, options);
           });
+
+          if (options.changeStyleAutomatically) {
+            // check whether edge.elk-edge selector exists or not
+            var isElkEdgeStyleExist = false;
+            cy.json().style.forEach(function (style) {
+              if (style.selector == 'edge.elk-edge') {
+                isElkEdgeStyleExist = true;
+              }
+            });
+
+            if (!isElkEdgeStyleExist) {
+              var elkEdgeStyle = _this.style()[0];
+
+              cy.style().selector(elkEdgeStyle.selector).style(elkEdgeStyle.style).update();
+            } else {
+              cy.style().update();
+            }
+          }
         }
       });
       return this;
