@@ -83,6 +83,9 @@ var options = {
 // based on the 'elk.edgeRouting' option. Algorithm adds 'elk-edge' class to each edge involved in the layout and
 // if 'changeStyleAutomatically' option is true, the styleheet defined for 'edge.elk-edge' selector is applied automatically by the layout.
 // If 'changeStyleAutomatically' option is false, user can get this stylesheet with the below function and apply it whenever he/she wants after the layout.
+// Please also note that the styleheet defined for 'edge.elk-edge' changes curve-style, edge-distances, source-endpoint, target-endpoint,
+// segment-distances, segment-weights, control-point-distances and control-point-weights style properties of the edges. If the layout will be used with
+// 'changeStyleAutomatically: true', then no other style block that changes these properties should be added after the first run of the layout.
 cy.layout( options ).style(); // returns [{selector: 'edge.elk-edge', style: { 'curve-style': ..., and other properties related to edge style }}] 
 
 cy.layout( options ).run();
