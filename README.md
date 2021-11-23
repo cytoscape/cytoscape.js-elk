@@ -67,13 +67,18 @@ var options = {
   stop: undefined, // Callback on layoutstop
   elk: {
     // All options are available at http://www.eclipse.org/elk/reference.html
-    // 'org.eclipse.elk.' can be dropped from the Identifier
-    // Or look at demo-demo.js for an example.
-    // Enums use the name of the enum e.g.
-    // 'searchOrder': 'DFS'
     //
-    // The main field to set is `algorithm`, which controls which particular
-    // layout algorithm is used.
+    // 'org.eclipse.' can be dropped from the identifier. The subsequent identifier has to be used as property key in quotes.
+    // E.g. for 'org.eclipse.elk.direction' use:
+    // 'elk.direction'
+    //
+    // Enums use the name of the enum as string e.g. instead of Direction.DOWN use:
+    // 'elk.direction': 'DOWN'
+    //
+    // The main field to set is `algorithm`, which controls which particular layout algorithm is used.
+    // Example (downwards layered layout):
+    'algorithm': 'layered',
+    'elk.direction': 'DOWN',
   },
   priority: function( edge ){ return null; }, // Edges with a non-nil value are skipped when geedy edge cycle breaking is enabled
 };
