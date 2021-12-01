@@ -164,6 +164,274 @@ const getPos = function (ele, options) {
   return p;
 };
 
+// layout sometimes returns edges in a tangled way
+// this function reorders edges by adjusting their points to reduce edge-edge crossings
+const reorderEdges = function (options) {
+  const {eles} = options;
+  const nodes = eles.nodes();
+  const edges = eles.edges();
+
+  if (options.elk['elk.edgeRouting'] != 'UNDEFINED') {
+    let axis = 'y';
+    let antiAxis = 'x';
+    if (options.elk['elk.direction'] == 'UP' || options.elk['elk.direction'] == 'DOWN') {
+      axis = 'x';
+      antiAxis = 'y';
+    }
+
+    // adjust edges
+    nodes.forEach(function(node) {
+      let connectedEdges = node.connectedEdges();
+      let firstSideEdges = cy.collection(); // edges incoming/outgoing from up/left
+      let secondSideEdges = cy.collection();  // edges incoming/outgoing from down/right
+      let incomingEdges = new Set();
+      let outgoingEdges = new Set();
+      connectedEdges.forEach(function(edge) {
+        let edgeSection = edge.scratch('elk').sections[0];
+        if (edgeSection.incomingShape == node.id()) {
+          outgoingEdges.add(edge.id());
+          if (getPos(node, options)[antiAxis] < edgeSection.startPoint[antiAxis]) {
+            secondSideEdges.merge(edge);
+          }
+          else {
+            firstSideEdges.merge(edge);
+          }
+        }
+        else {
+          incomingEdges.add(edge.id());
+          if (getPos(node, options)[antiAxis] < edgeSection.endPoint[antiAxis]) {
+            secondSideEdges.merge(edge);
+          }
+          else {
+            firstSideEdges.merge(edge);
+          }
+        }
+      });
+
+      // sort appropriate bend points (or start point if bend doesn't exist) in the first side
+      if(firstSideEdges.length > 0) {
+        let edgeFirstSideBendPoints = [];
+        firstSideEdges.forEach(function(edge){
+          let edgeSection = edge.scratch('elk').sections[0];
+          if (edgeSection.bendPoints && edgeSection.bendPoints.length > 1 && options.elk['elk.edgeRouting'] == 'ORTHOGONAL') {
+            if (outgoingEdges.has(edge.id())) {
+              edgeFirstSideBendPoints.push(edgeSection.bendPoints[1]);
+            }
+            else {
+              edgeFirstSideBendPoints.push(edgeSection.bendPoints[edgeSection.bendPoints.length - 2]);
+            }
+          }
+          else if (edgeSection.bendPoints && edgeSection.bendPoints.length > 0 && options.elk['elk.edgeRouting'] == 'POLYLINE') {
+            if (outgoingEdges.has(edge.id())) {
+              edgeFirstSideBendPoints.push(edgeSection.bendPoints[0]);
+            }
+            else {
+              edgeFirstSideBendPoints.push(edgeSection.bendPoints[edgeSection.bendPoints.length - 1]);
+            }
+          }
+          else {
+            if (outgoingEdges.has(edge.id())) {
+              edgeFirstSideBendPoints.push(edgeSection.endPoint);
+            }
+            else {
+              edgeFirstSideBendPoints.push(edgeSection.startPoint);
+            }
+          }
+        });
+
+        edgeFirstSideBendPoints.sort(function(a, b) {
+          return a[axis] - b[axis];
+        });
+        let edgeFirstSideBendPointsOrdered = JSON.parse(JSON.stringify(edgeFirstSideBendPoints));
+
+        // sort endpoints in the first side
+        let edgeFirstSideEndpoints = [];
+
+        firstSideEdges.forEach(function(edge){
+          if (outgoingEdges.has(edge.id())) {
+            edgeFirstSideEndpoints.push(edge.scratch('elk').sections[0].startPoint);
+          }
+          else {
+            edgeFirstSideEndpoints.push(edge.scratch('elk').sections[0].endPoint);
+          }
+        });
+
+        edgeFirstSideEndpoints.sort(function(a, b) {
+          return a[axis] - b[axis];
+        });
+        let edgeFirstSideEndpointsOrdered = JSON.parse(JSON.stringify(edgeFirstSideEndpoints));
+
+        // assign scratch data for the first side
+        firstSideEdges.forEach(function(edge) {
+          let edgeSection = edge.scratch('elk').sections[0];
+          edgeFirstSideBendPointsOrdered.forEach(function(bend, i){
+            let firstBend;
+            if (edgeSection.bendPoints && edgeSection.bendPoints.length > 1 && options.elk['elk.edgeRouting'] == 'ORTHOGONAL') {
+              if (outgoingEdges.has(edge.id())) {
+                firstBend = edgeSection.bendPoints[1];
+              }
+              else {
+                firstBend = edgeSection.bendPoints[edgeSection.bendPoints.length - 2];
+              }
+            }
+            else if (edgeSection.bendPoints && edgeSection.bendPoints.length > 0 && options.elk['elk.edgeRouting'] == 'POLYLINE') {
+              if (outgoingEdges.has(edge.id())) {
+                firstBend = edgeSection.bendPoints[0];
+              }
+              else {
+                firstBend = edgeSection.bendPoints[edgeSection.bendPoints.length - 1];
+              }
+            }
+            else {
+              if (outgoingEdges.has(edge.id())) {
+                firstBend = edgeSection.endPoint;
+              }
+              else {
+                firstBend = edgeSection.startPoint;
+              }
+            }
+            if( JSON.stringify(firstBend) === JSON.stringify(bend) ) {
+              if (outgoingEdges.has(edge.id())) {
+                edgeSection.startPoint[axis] = edgeFirstSideEndpointsOrdered[i][axis];
+                if ( options.elk['elk.edgeRouting'] == 'ORTHOGONAL' && edgeSection.bendPoints)
+                  edgeSection.bendPoints[0][axis] = edgeFirstSideEndpointsOrdered[i][axis];
+              }
+              else {
+                edgeSection.endPoint[axis] = edgeFirstSideEndpointsOrdered[i][axis];
+                if ( options.elk['elk.edgeRouting'] == 'ORTHOGONAL' && edgeSection.bendPoints)
+                  edgeSection.bendPoints[edgeSection.bendPoints.length - 1][axis] = edgeFirstSideEndpointsOrdered[i][axis];
+              }
+            }
+          });
+        });
+      }
+
+      // sort appropriate bend points (or start point if bend doesn't exist) in the second side
+      if(secondSideEdges.length > 0) {
+        let edgeSecondSideBendPoints = [];
+        secondSideEdges.forEach(function(edge){
+          let edgeSection = edge.scratch('elk').sections[0];
+          if (edgeSection.bendPoints && edgeSection.bendPoints.length > 1 && options.elk['elk.edgeRouting'] == 'ORTHOGONAL') {
+            if (outgoingEdges.has(edge.id())) {
+              edgeSecondSideBendPoints.push(edgeSection.bendPoints[1]);
+            }
+            else {
+              edgeSecondSideBendPoints.push(edgeSection.bendPoints[edgeSection.bendPoints.length - 2]);
+            }
+          }
+          else if (edgeSection.bendPoints && edgeSection.bendPoints.length > 0 && options.elk['elk.edgeRouting'] == 'POLYLINE') {
+            if (outgoingEdges.has(edge.id())) {
+              edgeSecondSideBendPoints.push(edgeSection.bendPoints[0]);
+            }
+            else {
+              edgeSecondSideBendPoints.push(edgeSection.bendPoints[edgeSection.bendPoints.length - 1]);
+            }
+          }
+          else {
+            if (outgoingEdges.has(edge.id())) {
+              edgeSecondSideBendPoints.push(edgeSection.endPoint);
+            }
+            else {
+              edgeSecondSideBendPoints.push(edgeSection.startPoint);
+            }
+          }
+        });
+
+        edgeSecondSideBendPoints.sort(function(a, b) {
+          return a[axis] - b[axis];
+        });
+        let edgeSecondSideBendPointsOrdered = JSON.parse(JSON.stringify(edgeSecondSideBendPoints));
+
+        // sort endpoints in the first side
+        let edgeSecondSideEndpoints = [];
+
+        secondSideEdges.forEach(function(edge){
+          if (outgoingEdges.has(edge.id())) {
+            edgeSecondSideEndpoints.push(edge.scratch('elk').sections[0].startPoint);
+          }
+          else {
+            edgeSecondSideEndpoints.push(edge.scratch('elk').sections[0].endPoint);
+          }
+        });
+
+        edgeSecondSideEndpoints.sort(function(a, b) {
+          return a[axis] - b[axis];
+        });
+        let edgeSecondSideEndpointsOrdered = JSON.parse(JSON.stringify(edgeSecondSideEndpoints));
+
+        // assign scratch data for the first side
+        secondSideEdges.forEach(function(edge) {
+          let edgeSection = edge.scratch('elk').sections[0];
+          edgeSecondSideBendPointsOrdered.forEach(function(bend, i){
+            let firstBend;
+            if (edgeSection.bendPoints && edgeSection.bendPoints.length > 1 && options.elk['elk.edgeRouting'] == 'ORTHOGONAL') {
+              if (outgoingEdges.has(edge.id())) {
+                firstBend = edgeSection.bendPoints[1];
+              }
+              else {
+                firstBend = edgeSection.bendPoints[edgeSection.bendPoints.length - 2];
+              }
+            }
+            else if (edgeSection.bendPoints && edgeSection.bendPoints.length > 0 && options.elk['elk.edgeRouting'] == 'POLYLINE') {
+              if (outgoingEdges.has(edge.id())) {
+                firstBend = edgeSection.bendPoints[0];
+              }
+              else {
+                firstBend = edgeSection.bendPoints[edgeSection.bendPoints.length - 1];
+              }
+            }
+            else {
+              if (outgoingEdges.has(edge.id())) {
+                firstBend = edgeSection.endPoint;
+              }
+              else {
+                firstBend = edgeSection.startPoint;
+              }
+            }
+            if( JSON.stringify(firstBend) === JSON.stringify(bend) ) {
+              if (outgoingEdges.has(edge.id())) {
+                edgeSection.startPoint[axis] = edgeSecondSideEndpointsOrdered[i][axis];
+                if ( options.elk['elk.edgeRouting'] == 'ORTHOGONAL' && edgeSection.bendPoints)
+                  edgeSection.bendPoints[0][axis] = edgeSecondSideEndpointsOrdered[i][axis];
+              }
+              else {
+                edgeSection.endPoint[axis] = edgeSecondSideEndpointsOrdered[i][axis];
+                if ( options.elk['elk.edgeRouting'] == 'ORTHOGONAL' && edgeSection.bendPoints)
+                  edgeSection.bendPoints[edgeSection.bendPoints.length - 1][axis] = edgeSecondSideEndpointsOrdered[i][axis];
+              }
+            }
+          });
+        });
+      }
+    });
+
+    // add bends to straight (without bend point) edges if necessary in orthogonal case
+    nodes.forEach(function(node) {
+      let outgoers = node.outgoers();
+      let outgoingEdges = outgoers.intersection(edges);
+
+      outgoingEdges.forEach(function(edge) {
+        let edgeSection = edge.scratch('elk').sections[0];
+        if (!edgeSection.bendPoints && options.elk['elk.edgeRouting'] == 'ORTHOGONAL') {
+          if (edgeSection.startPoint[axis] != edgeSection.endPoint[axis]) {
+            let bendPoint1;
+            let bendPoint2;
+            if (axis == 'x') {
+              bendPoint1 = {x: edgeSection.startPoint[axis], y: (edgeSection.startPoint[antiAxis] + edgeSection.endPoint[antiAxis]) / 2};
+              bendPoint2 = {x: edgeSection.endPoint[axis], y: (edgeSection.startPoint[antiAxis] + edgeSection.endPoint[antiAxis]) / 2};
+            }
+            else {
+              bendPoint1 = {x: (edgeSection.startPoint[antiAxis] + edgeSection.endPoint[antiAxis]) / 2, y: edgeSection.startPoint[axis]};
+              bendPoint2 = {x: (edgeSection.startPoint[antiAxis] + edgeSection.endPoint[antiAxis]) / 2, y: edgeSection.endPoint[axis]};
+            }
+            edgeSection.bendPoints = [bendPoint1, bendPoint2];
+          }
+        }
+      });
+    });
+  }
+};
+
 //  process edge to add required information for its new style
 const processEdge = function (edge, options) {
   let e = edge.scratch('elk');
@@ -171,6 +439,13 @@ const processEdge = function (edge, options) {
 
   let sourcePos = getPos(options.cy.getElementById(e.source), options);
   let targetPos = getPos(options.cy.getElementById(e.target), options);
+
+  let axis = 'y';
+  let antiAxis = 'x';
+  if (options.elk['elk.direction'] == 'UP' || options.elk['elk.direction'] == 'DOWN') {
+    axis = 'x';
+    antiAxis = 'y';
+  }
 
   if (options.elk['elk.edgeRouting'] == 'ORTHOGONAL' || options.elk['elk.edgeRouting'] == 'POLYLINE') {
     if (eInfo.bendPoints) {
@@ -193,7 +468,7 @@ const processEdge = function (edge, options) {
     }     
   }
   else if (options.elk['elk.edgeRouting'] == 'SPLINES') {
-    if (eInfo.bendPoints) {
+    if (eInfo.bendPoints && eInfo.bendPoints[eInfo.bendPoints.length - 1][antiAxis] !== eInfo.endPoint[antiAxis]) {
       e['elkCurveStyle'] = 'unbundled-bezier';
       e['elkEdgeDistances'] = 'node-position';
       eInfo.bendPoints.shift();
@@ -219,4 +494,4 @@ const processEdge = function (edge, options) {
   }
 };
 
-export { getPos, processEdge }
+export { getPos, reorderEdges, processEdge }

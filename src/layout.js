@@ -1,7 +1,7 @@
 import ELK from 'elkjs/lib/elk.bundled.js';
 import assign from './assign';
 import defaults from './defaults';
-import { getPos, processEdge } from './processResult'
+import { getPos, reorderEdges, processEdge } from './processResult'
 
 const elkOverrides = {};
 
@@ -169,6 +169,8 @@ class Layout {
           .layoutPositions(layout, options, (n) => getPos(n, options));
 
           if (options.elk.algorithm == "layered") {
+            reorderEdges(options);
+
             edges.forEach((e) => {
               processEdge(e, options);
             });
