@@ -182,7 +182,7 @@ const reorderEdges = function (options) {
 
     // adjust edges
     nodes.forEach(function(node) {
-      let connectedEdges = node.connectedEdges();
+      let connectedEdges = node.connectedEdges().intersection(edges);
       let firstSideEdges = cy.collection(); // edges incoming/outgoing from up/left
       let secondSideEdges = cy.collection();  // edges incoming/outgoing from down/right
       let incomingEdges = new Set();

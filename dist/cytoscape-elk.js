@@ -319,7 +319,7 @@ var reorderEdges = function reorderEdges(options) {
 
 
     nodes.forEach(function (node) {
-      var connectedEdges = node.connectedEdges();
+      var connectedEdges = node.connectedEdges().intersection(edges);
       var firstSideEdges = cy.collection(); // edges incoming/outgoing from up/left
 
       var secondSideEdges = cy.collection(); // edges incoming/outgoing from down/right
