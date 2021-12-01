@@ -306,6 +306,7 @@ var reorderEdges = function reorderEdges(options) {
   var eles = options.eles;
   var nodes = eles.nodes();
   var edges = eles.edges();
+  var cy = options.cy;
 
   if (options.elk['elk.edgeRouting'] != 'UNDEFINED') {
     var axis = 'y';
