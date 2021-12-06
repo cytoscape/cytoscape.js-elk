@@ -14,8 +14,10 @@ const defaults = {
   ready: undefined, // Callback on layoutready
   stop: undefined, // Callback on layoutstop
   elk: {
-    // Options to pass directly to ELK `layoutOptions`
-    // the elk algorithm to use
+    // Options to pass directly to ELK `layoutOptions`. The subsequent identifier has to be used as property key in quotes.
+    // E.g. for 'org.eclipse.elk.direction' use:
+    // 'elk.direction'
+    // Primary/mandatory, the elk algorithm to use
     // one of 'box', 'disco', 'force', 'layered', 'mrtree', 'radial', 'random', 'stress'
     // (see https://www.eclipse.org/elk/reference/algorithms.html)
     algorithm: undefined,
