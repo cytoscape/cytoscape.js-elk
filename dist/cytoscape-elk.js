@@ -612,6 +612,41 @@ var processEdge = function processEdge(edge, options) {
     edge.removeClass('elk-edge');
     edge.removeScratch('elk');
   }
+}; // relocates graph to its original center because elk moves graph's top-left to (0,0)
+
+
+var relocateGraph = function relocateGraph(options) {
+  var minXCoord = Number.POSITIVE_INFINITY;
+  var maxXCoord = Number.NEGATIVE_INFINITY;
+  var minYCoord = Number.POSITIVE_INFINITY;
+  var maxYCoord = Number.NEGATIVE_INFINITY; // calculate current bounding box
+
+  options.eles.nodes().forEach(function (node) {
+    var dims = node.layoutDimensions(options);
+    var leftX = getPos(node, options).x - dims.w / 2;
+    var rightX = getPos(node, options).x + dims.w / 2;
+    var topY = getPos(node, options).y - dims.h / 2;
+    var bottomY = getPos(node, options).y + dims.h / 2;
+    if (leftX < minXCoord) minXCoord = leftX;
+    if (rightX > maxXCoord) maxXCoord = rightX;
+    if (topY < minYCoord) minYCoord = topY;
+    if (bottomY > maxYCoord) maxYCoord = bottomY;
+  }); // original center
+
+  var oldBoundingBox = options.eles.boundingBox();
+  var originalCenter = {
+    x: oldBoundingBox.x1 + oldBoundingBox.w / 2,
+    y: oldBoundingBox.y1 + oldBoundingBox.h / 2
+  }; // find difference between current and original center
+
+  var diffOnX = originalCenter.x - (maxXCoord + minXCoord) / 2;
+  var diffOnY = originalCenter.y - (maxYCoord + minYCoord) / 2; // move graph to its original center
+
+  options.eles.nodes().forEach(function (node) {
+    var k = node.scratch('elk');
+    k.x += diffOnX;
+    k.y += diffOnY;
+  });
 };
 
 
@@ -793,12 +828,6 @@ var Layout = /*#__PURE__*/function () {
       var graph = makeGraph(nodes, edges, options);
       graph['layoutOptions'] = options.elk;
       elk.layout(graph).then(function () {
-        nodes.filter(function (n) {
-          return !n.isParent();
-        }).layoutPositions(layout, options, function (n) {
-          return getPos(n, options);
-        });
-
         if (options.elk.algorithm == "layered") {
           reorderEdges(options);
           edges.forEach(function (e) {
@@ -822,7 +851,15 @@ var Layout = /*#__PURE__*/function () {
               options.cy.style().update();
             }
           }
-        }
+        } // move graph to its original center because elk moves its top-left to (0,0)
+
+
+        relocateGraph(options);
+        nodes.filter(function (n) {
+          return !n.isParent();
+        }).layoutPositions(layout, options, function (n) {
+          return getPos(n, options);
+        });
       });
       return this;
     }

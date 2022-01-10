@@ -495,4 +495,45 @@ const processEdge = function (edge, options) {
   }
 };
 
-export { getPos, reorderEdges, processEdge }
+// relocates graph to its original center because elk moves graph's top-left to (0,0)
+const relocateGraph = function(options) {
+  let minXCoord = Number.POSITIVE_INFINITY;
+  let maxXCoord = Number.NEGATIVE_INFINITY;
+  let minYCoord = Number.POSITIVE_INFINITY;
+  let maxYCoord = Number.NEGATIVE_INFINITY;
+
+  // calculate current bounding box
+  options.eles.nodes().forEach(function(node) {
+    let dims = node.layoutDimensions(options);
+    let leftX = getPos(node, options).x - dims.w / 2;
+    let rightX = getPos(node, options).x + dims.w / 2;
+    let topY = getPos(node, options).y - dims.h / 2;
+    let bottomY = getPos(node, options).y + dims.h / 2;
+
+    if (leftX < minXCoord)
+      minXCoord = leftX;
+    if (rightX > maxXCoord)
+      maxXCoord = rightX;
+    if (topY < minYCoord)
+      minYCoord = topY;
+    if (bottomY > maxYCoord)
+      maxYCoord = bottomY;
+  });
+
+  // original center
+  let oldBoundingBox = options.eles.boundingBox();
+  let originalCenter = {x: oldBoundingBox.x1 + oldBoundingBox.w / 2, y: oldBoundingBox.y1 + oldBoundingBox.h / 2};
+
+  // find difference between current and original center
+  let diffOnX = originalCenter.x - (maxXCoord + minXCoord) / 2;
+  let diffOnY = originalCenter.y - (maxYCoord + minYCoord) / 2;
+
+  // move graph to its original center
+  options.eles.nodes().forEach(function(node) {
+    let k = node.scratch('elk');
+    k.x += diffOnX;
+    k.y += diffOnY;
+  });
+};
+
+export { getPos, reorderEdges, processEdge, relocateGraph }

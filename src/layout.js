@@ -1,7 +1,7 @@
 import ELK from 'elkjs/lib/elk.bundled.js';
 import assign from './assign';
 import defaults from './defaults';
-import { getPos, reorderEdges, processEdge } from './processResult'
+import { getPos, reorderEdges, processEdge, relocateGraph } from './processResult'
 
 const elkOverrides = {};
 
@@ -163,39 +163,41 @@ class Layout {
     graph['layoutOptions'] = options.elk
     elk
       .layout(graph)
-      .then(() => {       
+      .then(() => {
+        if (options.elk.algorithm == "layered") {
+          reorderEdges(options);
+
+          edges.forEach((e) => {
+            processEdge(e, options);
+          });
+
+          if(options.changeStyleAutomatically) {
+            // check whether edge.elk-edge selector exists or not
+            let isElkEdgeStyleExist = false;
+            options.cy.json().style.forEach(function(style){
+              if(style.selector == 'edge.elk-edge') {
+                isElkEdgeStyleExist = true;
+              }
+            })
+
+            if (!isElkEdgeStyleExist) {
+              let elkEdgeStyle = this.style()[0];
+              options.cy.style()
+                .selector(elkEdgeStyle.selector)
+                .style(elkEdgeStyle.style)
+                .update();
+            }
+            else {
+              options.cy.style().update();
+            }
+          }
+        }
+        // move graph to its original center because elk moves its top-left to (0,0)
+        relocateGraph(options);
         nodes
           .filter((n) => !n.isParent())
           .layoutPositions(layout, options, (n) => getPos(n, options));
 
-          if (options.elk.algorithm == "layered") {
-            reorderEdges(options);
-
-            edges.forEach((e) => {
-              processEdge(e, options);
-            });
-
-            if(options.changeStyleAutomatically) {
-              // check whether edge.elk-edge selector exists or not
-              let isElkEdgeStyleExist = false;
-              options.cy.json().style.forEach(function(style){
-                if(style.selector == 'edge.elk-edge') {
-                  isElkEdgeStyleExist = true;
-                }
-              })            
-
-              if (!isElkEdgeStyleExist) {
-                let elkEdgeStyle = this.style()[0];
-                options.cy.style()
-                  .selector(elkEdgeStyle.selector)
-                  .style(elkEdgeStyle.style)            
-                  .update();
-              }
-              else {
-                options.cy.style().update();
-              }
-            }
-          }           
       });
 
     return this;
