@@ -7,15 +7,15 @@
 		exports["cytoscapeElk"] = factory(require("elkjs"));
 	else
 		root["cytoscapeElk"] = factory(root["ELK"]);
-})(this, function(__WEBPACK_EXTERNAL_MODULE__434__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE__245__) {
 return /******/ (function() { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 434:
+/***/ 245:
 /***/ (function(module) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE__434__;
+module.exports = __WEBPACK_EXTERNAL_MODULE__245__;
 
 /***/ })
 
@@ -27,8 +27,9 @@ module.exports = __WEBPACK_EXTERNAL_MODULE__434__;
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
 /******/ 		// Check if module is in cache
-/******/ 		if(__webpack_module_cache__[moduleId]) {
-/******/ 			return __webpack_module_cache__[moduleId].exports;
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
 /******/ 		}
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = __webpack_module_cache__[moduleId] = {
@@ -85,7 +86,7 @@ __webpack_require__.d(__webpack_exports__, {
 });
 
 // EXTERNAL MODULE: external {"commonjs":"elkjs","commonjs2":"elkjs","amd":"elkjs","root":"ELK"}
-var external_commonjs_elkjs_commonjs2_elkjs_amd_elkjs_root_ELK_ = __webpack_require__(434);
+var external_commonjs_elkjs_commonjs2_elkjs_amd_elkjs_root_ELK_ = __webpack_require__(245);
 var external_commonjs_elkjs_commonjs2_elkjs_amd_elkjs_root_ELK_default = /*#__PURE__*/__webpack_require__.n(external_commonjs_elkjs_commonjs2_elkjs_amd_elkjs_root_ELK_);
 ;// CONCATENATED MODULE: ./src/assign.js
 // Simple, internal Object.assign() polyfill for options objects etc.
@@ -130,8 +131,10 @@ var defaults = {
   stop: undefined,
   // Callback on layoutstop
   elk: {
-    // Options to pass directly to ELK `layoutOptions`
-    // the elk algorithm to use
+    // Options to pass directly to ELK `layoutOptions`. The subsequent identifier has to be used as property key in quotes.
+    // E.g. for 'org.eclipse.elk.direction' use:
+    // 'elk.direction'
+    // Primary/mandatory, the elk algorithm to use
     // one of 'box', 'disco', 'force', 'layered', 'mrtree', 'radial', 'random', 'stress'
     // (see https://www.eclipse.org/elk/reference/algorithms.html)
     algorithm: undefined
@@ -147,7 +150,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
 
 
 
@@ -293,9 +296,8 @@ var Layout = /*#__PURE__*/function () {
       var edges = eles.edges();
       var elk = new (external_commonjs_elkjs_commonjs2_elkjs_amd_elkjs_root_ELK_default())();
       var graph = makeGraph(nodes, edges, options);
-      elk.layout(graph, {
-        layoutOptions: options.elk
-      }).then(function () {
+      graph['layoutOptions'] = options.elk;
+      elk.layout(graph).then(function () {
         nodes.filter(function (n) {
           return !n.isParent();
         }).layoutPositions(layout, options, function (n) {
@@ -340,7 +342,7 @@ if (typeof cytoscape !== 'undefined') {
 
 /* harmony default export */ var src = (register);
 }();
-__webpack_exports__ = __webpack_exports__.default;
+__webpack_exports__ = __webpack_exports__["default"];
 /******/ 	return __webpack_exports__;
 /******/ })()
 ;
