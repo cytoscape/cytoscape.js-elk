@@ -10,8 +10,8 @@ The [elk](https://github.com/OpenKieler/elkjs) layout algorithm adapter for Cyto
 
 ## Dependencies
 
- * Cytoscape.js ^3.2.0
- * elkjs ^0.7.0
+ * Cytoscape.js >= 3.2.0
+ * elkjs >= 0.8.1
 
 
 ## Usage instructions
