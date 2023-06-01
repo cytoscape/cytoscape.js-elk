@@ -32,6 +32,7 @@ const makeNode = function (node, options) {
   const k = {
     _cyEle: node,
     id: node.id(),
+    layoutOptions: node.scratch('layoutOptions')
   };
 
   if (!node.isParent()) {
