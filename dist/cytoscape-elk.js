@@ -90,11 +90,11 @@ var external_commonjs_elkjs_commonjs2_elkjs_amd_elkjs_root_ELK_ = __webpack_requ
 var external_commonjs_elkjs_commonjs2_elkjs_amd_elkjs_root_ELK_default = /*#__PURE__*/__webpack_require__.n(external_commonjs_elkjs_commonjs2_elkjs_amd_elkjs_root_ELK_);
 ;// CONCATENATED MODULE: ./src/assign.js
 // Simple, internal Object.assign() polyfill for options objects etc.
-
 function assign_assign(tgt) {
   for (var _len = arguments.length, srcs = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
     srcs[_key - 1] = arguments[_key];
   }
+
   srcs.forEach(function (src) {
     Object.keys(src).forEach(function (k) {
       return tgt[k] = src[k];
@@ -102,6 +102,7 @@ function assign_assign(tgt) {
   });
   return tgt;
 }
+
 /* harmony default export */ var src_assign = (Object.assign != null ? Object.assign.bind(Object) : assign_assign);
 ;// CONCATENATED MODULE: ./src/defaults.js
 var defaults = {
@@ -141,20 +142,21 @@ var defaults = {
   priority: function priority() {
     return null;
   } // Edges with a non-nil value are skipped when geedy edge cycle breaking is enabled
-};
 
+};
 /* harmony default export */ var src_defaults = (defaults);
 ;// CONCATENATED MODULE: ./src/layout.js
-function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
-function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+
 
 
 
 var elkOverrides = {};
+
 var getPos = function getPos(ele, options) {
   var dims = ele.layoutDimensions(options);
   var parent = ele.parent();
@@ -163,38 +165,43 @@ var getPos = function getPos(ele, options) {
     x: k.x,
     y: k.y
   };
+
   while (parent.nonempty()) {
     var kp = parent.scratch('elk');
     p.x += kp.x;
     p.y += kp.y;
     parent = parent.parent();
-  }
+  } // elk considers a node position to be its top-left corner, while cy is the centre
 
-  // elk considers a node position to be its top-left corner, while cy is the centre
+
   p.x += dims.w / 2;
   p.y += dims.h / 2;
   return p;
 };
+
 var makeNode = function makeNode(node, options) {
   var k = {
     _cyEle: node,
-    id: node.id(),
-    layoutOptions: node.scratch('layoutOptions')
+    id: node.id()
   };
+
   if (!node.isParent()) {
     var dims = node.layoutDimensions(options);
-    var p = node.position();
+    var p = node.position(); // the elk position is the top-left corner, cy is the centre
 
-    // the elk position is the top-left corner, cy is the centre
     k.x = p.x - dims.w / 2;
     k.y = p.y - dims.h / 2;
     k.width = dims.w;
     k.height = dims.h;
   }
+
   node.scratch('elk', k);
   return k;
 };
-var makeEdge = function makeEdge(edge /*, options*/) {
+
+var makeEdge = function makeEdge(edge
+/*, options*/
+) {
   var k = {
     _cyEle: edge,
     id: edge.id(),
@@ -204,6 +211,7 @@ var makeEdge = function makeEdge(edge /*, options*/) {
   edge.scratch('elk', k);
   return k;
 };
+
 var makeGraph = function makeGraph(nodes, edges, options) {
   var elkNodes = [];
   var elkEdges = [];
@@ -212,42 +220,45 @@ var makeGraph = function makeGraph(nodes, edges, options) {
     id: 'root',
     children: [],
     edges: []
-  };
+  }; // map all nodes
 
-  // map all nodes
   for (var i = 0; i < nodes.length; i++) {
     var n = nodes[i];
     var k = makeNode(n, options);
     elkNodes.push(k);
     elkEleLookup[n.id()] = k;
-  }
+  } // map all edges
 
-  // map all edges
+
   for (var _i = 0; _i < edges.length; _i++) {
     var e = edges[_i];
+
     var _k = makeEdge(e, options);
+
     elkEdges.push(_k);
     elkEleLookup[e.id()] = _k;
-  }
+  } // make hierarchy
 
-  // make hierarchy
+
   for (var _i2 = 0; _i2 < elkNodes.length; _i2++) {
     var _k2 = elkNodes[_i2];
     var _n = _k2._cyEle;
+
     if (!_n.isChild()) {
       graph.children.push(_k2);
     } else {
       var parent = _n.parent();
+
       var parentK = elkEleLookup[parent.id()];
       var children = parentK.children = parentK.children || [];
       children.push(_k2);
     }
   }
-  for (var _i3 = 0; _i3 < elkEdges.length; _i3++) {
-    var _k3 = elkEdges[_i3];
 
-    // put all edges in the top level for now
+  for (var _i3 = 0; _i3 < elkEdges.length; _i3++) {
+    var _k3 = elkEdges[_i3]; // put all edges in the top level for now
     // TODO does this cause issues in certain edgecases?
+
     /*let e = k._cyEle;
     let parentSrc = e.source().parent();
     let parentTgt = e.target().parent();
@@ -256,15 +267,17 @@ var makeGraph = function makeGraph(nodes, edges, options) {
        kp.edges = kp.edges || [];
        kp.edges.push( k );
     } else {*/
-    graph.edges.push(_k3);
-    //}
+
+    graph.edges.push(_k3); //}
   }
 
   return graph;
 };
+
 var Layout = /*#__PURE__*/function () {
   function Layout(options) {
     _classCallCheck(this, Layout);
+
     var elkOptions = options.elk;
     var cy = options.cy;
     this.options = src_assign({}, src_defaults, options);
@@ -272,6 +285,7 @@ var Layout = /*#__PURE__*/function () {
       aspectRatio: cy.width() / cy.height()
     }, src_defaults.elk, elkOptions, elkOverrides);
   }
+
   _createClass(Layout, [{
     key: "run",
     value: function run() {
@@ -303,17 +317,19 @@ var Layout = /*#__PURE__*/function () {
       return this; // chaining
     }
   }]);
+
   return Layout;
 }();
+
 /* harmony default export */ var layout = (Layout);
 ;// CONCATENATED MODULE: ./src/index.js
+ // registers the extension on a cytoscape lib ref
 
-
-// registers the extension on a cytoscape lib ref
 var register = function register(cytoscape) {
   if (!cytoscape) {
     return;
   } // can't register if cytoscape unspecified
+
 
   cytoscape('layout', 'elk', layout); // register with cytoscape.js
 };
@@ -323,6 +339,7 @@ if (typeof cytoscape !== 'undefined') {
   // eslint-disable-next-line no-undef
   register(cytoscape);
 }
+
 /* harmony default export */ var src = (register);
 }();
 __webpack_exports__ = __webpack_exports__["default"];
