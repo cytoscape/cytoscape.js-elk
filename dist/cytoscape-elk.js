@@ -283,6 +283,7 @@ var Layout = /*#__PURE__*/function () {
       var elk = new (external_commonjs_elkjs_commonjs2_elkjs_amd_elkjs_root_ELK_default())();
       var graph = makeGraph(nodes, edges, options);
       graph['layoutOptions'] = options.elk;
+      console.log(graph, JSON.stringify(graph));
       elk.layout(graph).then(function () {
         nodes.filter(function (n) {
           return !n.isParent();
