@@ -32,8 +32,16 @@ const makeNode = function (node, options) {
   const k = {
     _cyEle: node,
     id: node.id(),
-    layoutOptions: node.scratch('layoutOptions')
   };
+
+  // Apply nodeLayoutOptions per user-specified function
+  // e.g. nodeLayoutOptions => n.scratch('layoutOptions')
+  if (options.nodeLayoutOptions){
+    k.layoutOptions = options.nodeLayoutOptions(node);
+  }
+
+  // Optionally Apply nodeLayoutOptions
+
 
   if (!node.isParent()) {
     const dims = node.layoutDimensions(options);
