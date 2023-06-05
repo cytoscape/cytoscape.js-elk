@@ -40,7 +40,6 @@ const makeNode = function (node, options) {
     k.layoutOptions = options.nodeLayoutOptions(node);
   }
 
-  // Optionally Apply nodeLayoutOptions
 
 
   if (!node.isParent()) {
