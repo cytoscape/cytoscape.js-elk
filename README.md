@@ -91,7 +91,7 @@ You can set layout options per node by defining a `nodeLayoutOptions` function w
 For instance, if you want to store these options within the node's `scratch` object, you can do something like this:
 
 ```js
-nodeLayoutOptions: (n: any) => n.scratch('layoutOptions')
+nodeLayoutOptions: node => n.scratch('layoutOptions')
 ```                     
 The set of  `options.elk.algorithm` values that are supported by ELK.js follows:
 
