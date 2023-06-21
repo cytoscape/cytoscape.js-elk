@@ -34,6 +34,14 @@ const makeNode = function (node, options) {
     id: node.id(),
   };
 
+  // Apply nodeLayoutOptions per user-specified function
+  // e.g. nodeLayoutOptions => n.scratch('layoutOptions')
+  if (options.nodeLayoutOptions){
+    k.layoutOptions = options.nodeLayoutOptions(node);
+  }
+
+
+
   if (!node.isParent()) {
     const dims = node.layoutDimensions(options);
     const p = node.position();
@@ -160,7 +168,7 @@ class Layout {
 
     const elk = new ELK();
     const graph = makeGraph(nodes, edges, options);
-    graph['layoutOptions'] = options.elk
+    graph['layoutOptions'] = options.elk;
     elk
       .layout(graph)
       .then(() => {

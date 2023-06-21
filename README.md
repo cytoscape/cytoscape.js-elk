@@ -65,6 +65,7 @@ var options = {
   transform: function( node, pos ){ return pos; }, // A function that applies a transform to the final node position
   ready: undefined, // Callback on layoutready
   stop: undefined, // Callback on layoutstop
+  nodeLayoutOptions: undefined, // Per-node options function
   elk: {
     // All options are available at http://www.eclipse.org/elk/reference.html
     //
@@ -86,6 +87,12 @@ var options = {
 cy.layout( options ).run();
 ```
 
+You can set layout options per node by defining a `nodeLayoutOptions` function which is called on a per-node basis. This is useful for tweaking the layout of a particular node, like for [setting its partition](https://www.eclipse.org/elk/reference/options/org-eclipse-elk-partitioning-partition.html) for the layered layout.
+For instance, if you want to store these options within the node's `scratch` object, you can do something like this:
+
+```js
+nodeLayoutOptions: node => n.scratch('layoutOptions')
+```                     
 The set of  `options.elk.algorithm` values that are supported by ELK.js follows:
 
 - `box` : ([Demo](https://cytoscape.github.io/cytoscape.js-elk/?demo=box)) ([Docs](https://www.eclipse.org/elk/reference/algorithms/org-eclipse-elk-box.html)) Pack the nodes like boxes.

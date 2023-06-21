@@ -13,6 +13,7 @@ const defaults = {
   }, // A function that applies a transform to the final node position
   ready: undefined, // Callback on layoutready
   stop: undefined, // Callback on layoutstop
+  nodeLayoutOptions: undefined, // Special options for only the nodes
   elk: {
     // Options to pass directly to ELK `layoutOptions`. The subsequent identifier has to be used as property key in quotes.
     // E.g. for 'org.eclipse.elk.direction' use:
