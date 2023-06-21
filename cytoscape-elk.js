@@ -130,6 +130,8 @@ var defaults = {
   // Callback on layoutready
   stop: undefined,
   // Callback on layoutstop
+  nodeLayoutOptions: undefined,
+  // Special options for only the nodes
   elk: {
     // Options to pass directly to ELK `layoutOptions`. The subsequent identifier has to be used as property key in quotes.
     // E.g. for 'org.eclipse.elk.direction' use:
@@ -183,7 +185,12 @@ var makeNode = function makeNode(node, options) {
   var k = {
     _cyEle: node,
     id: node.id()
-  };
+  }; // Apply nodeLayoutOptions per user-specified function
+  // e.g. nodeLayoutOptions => n.scratch('layoutOptions')
+
+  if (options.nodeLayoutOptions) {
+    k.layoutOptions = options.nodeLayoutOptions(node);
+  }
 
   if (!node.isParent()) {
     var dims = node.layoutDimensions(options);
