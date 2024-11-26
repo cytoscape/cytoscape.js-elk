@@ -1,21 +1,21 @@
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
-		module.exports = factory(require("elkjs"));
+		module.exports = factory(require("elkjs/lib/elk.bundled.js"));
 	else if(typeof define === 'function' && define.amd)
 		define(["elkjs"], factory);
 	else if(typeof exports === 'object')
-		exports["cytoscapeElk"] = factory(require("elkjs"));
+		exports["cytoscapeElk"] = factory(require("elkjs/lib/elk.bundled.js"));
 	else
 		root["cytoscapeElk"] = factory(root["ELK"]);
-})(this, function(__WEBPACK_EXTERNAL_MODULE__245__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE__632__) {
 return /******/ (function() { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 245:
+/***/ 632:
 /***/ (function(module) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE__245__;
+module.exports = __WEBPACK_EXTERNAL_MODULE__632__;
 
 /***/ })
 
@@ -85,9 +85,9 @@ __webpack_require__.d(__webpack_exports__, {
   "default": function() { return /* binding */ src; }
 });
 
-// EXTERNAL MODULE: external {"commonjs":"elkjs","commonjs2":"elkjs","amd":"elkjs","root":"ELK"}
-var external_commonjs_elkjs_commonjs2_elkjs_amd_elkjs_root_ELK_ = __webpack_require__(245);
-var external_commonjs_elkjs_commonjs2_elkjs_amd_elkjs_root_ELK_default = /*#__PURE__*/__webpack_require__.n(external_commonjs_elkjs_commonjs2_elkjs_amd_elkjs_root_ELK_);
+// EXTERNAL MODULE: external {"commonjs":"elkjs/lib/elk.bundled.js","commonjs2":"elkjs/lib/elk.bundled.js","amd":"elkjs","root":"ELK"}
+var elk_bundled_js_amd_elkjs_root_ELK_ = __webpack_require__(632);
+var elk_bundled_js_amd_elkjs_root_ELK_default = /*#__PURE__*/__webpack_require__.n(elk_bundled_js_amd_elkjs_root_ELK_);
 ;// CONCATENATED MODULE: ./src/assign.js
 // Simple, internal Object.assign() polyfill for options objects etc.
 function assign_assign(tgt) {
@@ -301,7 +301,7 @@ var Layout = /*#__PURE__*/function () {
       var eles = options.eles;
       var nodes = eles.nodes();
       var edges = eles.edges();
-      var elk = new (external_commonjs_elkjs_commonjs2_elkjs_amd_elkjs_root_ELK_default())();
+      var elk = new (elk_bundled_js_amd_elkjs_root_ELK_default())();
       var graph = makeGraph(nodes, edges, options);
       graph['layoutOptions'] = options.elk;
       elk.layout(graph).then(function () {
