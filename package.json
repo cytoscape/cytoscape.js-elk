@@ -44,7 +44,7 @@
     "cytoscape": "^3.2.0"
   },
   "dependencies": {
-    "elkjs": "^0.8.1"
+    "elkjs": "^0.9.3"
   },
   "prettier": {
     "singleQuote": true

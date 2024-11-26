@@ -26,8 +26,8 @@ module.exports = (env, argv) => {
     externals: PROD
       ? {
           'elkjs/lib/elk.bundled.js': {
-            commonjs: 'elkjs',
-            commonjs2: 'elkjs',
+            commonjs: 'elkjs/lib/elk.bundled.js',
+            commonjs2: 'elkjs/lib/elk.bundled.js',
             amd: 'elkjs',
             root: 'ELK',
           },
