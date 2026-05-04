@@ -6,6 +6,7 @@ const demos = [
   'layered',
   'mrtree',
   'random',
+  'separated',
   'stress',
 ];
 
