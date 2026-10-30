@@ -67,6 +67,7 @@ var options = {
   stop: undefined, // Callback on layoutstop
   nodeLayoutOptions: undefined, // Per-node options function
   useElkEdgeGeometry: false, // Whether to apply ELK edge routes to Cytoscape segment geometry
+  elkEdgeRadius: 0, // Corner radius for ELK edge routes; above 0 uses round-segments (Cytoscape 3.29+, ignored on older versions)
   elk: {
     // All options are available at http://www.eclipse.org/elk/reference.html
     //
@@ -89,12 +90,19 @@ cy.layout( options ).run();
 ```
 
 If you want ELK to provide routed edge geometry (e.g. to separate parallel edges in layered layouts), set `useElkEdgeGeometry: true`.
-When enabled, ELK `sections` points are translated into Cytoscape `segments` control data per edge.
+When enabled, ELK `sections` points are translated into Cytoscape `segments` control data per edge,
+unless there are no bend points.
+Note that edges will be distorted before Cytoscape 3.27 since `edge-distances: endpoints` was only added in that version.
+
+Set `elkEdgeRadius` above 0 to round the bends (only works on Cytoscape 3.29+).
+
+For compound graphs, edges that cross group borders will not be routed unless you also set `'elk.hierarchyHandling': 'INCLUDE_CHILDREN'`. See the [compound demo](https://cytoscape.github.io/cytoscape.js-elk/?demo=compound).
 
 ```js
 var options = {
   name: 'elk',
   useElkEdgeGeometry: true,
+  elkEdgeRadius: 6,
   elk: {
     algorithm: 'layered',
     'elk.direction': 'RIGHT',
