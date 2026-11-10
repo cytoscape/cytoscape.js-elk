@@ -1,11 +1,13 @@
 const demos = [
   'box',
+  'compound',
   'demo',
   'disco',
   'force',
   'layered',
   'mrtree',
   'random',
+  'separated',
   'stress',
 ];
 
