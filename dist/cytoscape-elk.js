@@ -131,6 +131,8 @@ var defaults = {
   // Special options for only the nodes
   useElkEdgeGeometry: false,
   // Whether to apply ELK edge routes (sections) to Cytoscape segment geometry
+  elkEdgeRadius: 0,
+  // Corner radius for ELK edge routes; above 0 uses round-segments (Cytoscape 3.29+, ignored on older versions)
   elk: {
     // Options to pass directly to ELK `layoutOptions`. The subsequent identifier has to be used as property key in quotes.
     // E.g. for 'org.eclipse.elk.direction' use:
@@ -150,20 +152,19 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
 function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
 function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o); } }
 function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
-function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
-function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 
 
 
 var elkOverrides = {};
-var minSegmentWeight = 0.01;
-var maxSegmentWeight = 0.99;
 var getPos = function getPos(ele, options) {
   var dims = ele.layoutDimensions(options);
   var parent = ele.parent();
@@ -218,17 +219,55 @@ var makeEdge = function makeEdge(edge /*, options*/) {
   edge.scratch('elk', k);
   return k;
 };
-var getElkEdgePoints = function getElkEdgePoints(elkEdge) {
+
+// Absolute top-left origin of every ELK node, keyed by id. ELK child
+// coordinates are relative to the parent, so the walk sums them up.
+var getElkOrigins = function getElkOrigins(graph) {
+  var origins = _defineProperty({}, graph.id, {
+    x: 0,
+    y: 0
+  });
+  var _walk = function walk(container, ox, oy) {
+    var children = container.children || [];
+    for (var i = 0; i < children.length; i++) {
+      var child = children[i];
+      var x = ox + (child.x || 0);
+      var y = oy + (child.y || 0);
+      origins[child.id] = {
+        x: x,
+        y: y
+      };
+      _walk(child, x, y);
+    }
+  };
+  _walk(graph, 0, 0);
+  return origins;
+};
+
+// ELK writes section coordinates relative to `elkEdge.container`, which is
+// the root unless both ends sit inside the same compound node.
+var getElkEdgePoints = function getElkEdgePoints(elkEdge, origins, rootId) {
   var sec = elkEdge.sections && elkEdge.sections[0];
   if (!sec || !sec.startPoint || !sec.endPoint) {
     return [];
   }
-  var points = [sec.startPoint];
-  var bends = sec.bendPoints || [];
-  for (var i = 0; i < bends.length; i++) {
-    points.push(bends[i]);
+  var container = elkEdge.container === undefined ? rootId : elkEdge.container;
+  var origin = origins[container] || {
+    x: 0,
+    y: 0
+  };
+  var raw = [sec.startPoint].concat(sec.bendPoints || [], [sec.endPoint]);
+  var points = [];
+  for (var i = 0; i < raw.length; i++) {
+    var p = {
+      x: raw[i].x + origin.x,
+      y: raw[i].y + origin.y
+    };
+    var last = points[points.length - 1];
+    if (!last || last.x !== p.x || last.y !== p.y) {
+      points.push(p);
+    }
   }
-  points.push(sec.endPoint);
   return points;
 };
 var fmtEndpoint = function fmtEndpoint(dx, dy) {
@@ -252,8 +291,7 @@ var projectOntoLine = function projectOntoLine(a, b, p) {
     d: d
   };
 };
-var applyElkEdgeGeometry = function applyElkEdgeGeometry(edge, elkEdge, sourceCenter, targetCenter) {
-  var points = getElkEdgePoints(elkEdge);
+var applyElkEdgeGeometry = function applyElkEdgeGeometry(edge, points, sourceCenter, targetCenter, radius) {
   if (points.length < 2) {
     return;
   }
@@ -263,33 +301,49 @@ var applyElkEdgeGeometry = function applyElkEdgeGeometry(edge, elkEdge, sourceCe
   var bends = points.slice(1, points.length - 1);
   var sourceEndpoint = fmtEndpoint(startPoint.x - sourceCenter.x, startPoint.y - sourceCenter.y);
   var targetEndpoint = fmtEndpoint(endPoint.x - targetCenter.x, endPoint.y - targetCenter.y);
-  if (bends.length === 0) {
-    edge.style({
-      'curve-style': 'segments',
-      'edge-distances': 'endpoints',
-      'source-endpoint': sourceEndpoint,
-      'target-endpoint': targetEndpoint,
-      'segment-weights': '0.5',
-      'segment-distances': '0'
-    });
-    return;
-  }
   var segmentWeights = [];
   var segmentDistances = [];
   for (var i = 0; i < bends.length; i++) {
     var proj = projectOntoLine(startPoint, endPoint, bends[i]);
-    var weight = Math.max(minSegmentWeight, Math.min(maxSegmentWeight, proj.w));
-    segmentWeights.push(weight.toFixed(4));
-    segmentDistances.push(proj.d.toFixed(2));
+    var weight = proj.w.toFixed(4);
+    var distance = proj.d.toFixed(2);
+
+    // Weights outside 0..1 are valid (placed beyond the start or end) and
+    // Cytoscape renders them correctly. We remove weights that would place a
+    // bend exactly at an endpoint, because shortenIntersection then fails and
+    // the edge is not drawn at all.
+    if ((Number(weight) === 0 || Number(weight) === 1) && Number(distance) === 0) {
+      continue;
+    }
+    segmentWeights.push(weight);
+    segmentDistances.push(distance);
   }
-  edge.style({
-    'curve-style': 'segments',
+  if (segmentWeights.length === 0) {
+    edge.style({
+      'curve-style': 'straight',
+      'edge-distances': 'endpoints',
+      'source-endpoint': sourceEndpoint,
+      'target-endpoint': targetEndpoint
+    });
+    return;
+  }
+  var style = {
+    'curve-style': radius > 0 ? 'round-segments' : 'segments',
     'edge-distances': 'endpoints',
     'source-endpoint': sourceEndpoint,
     'target-endpoint': targetEndpoint,
     'segment-weights': segmentWeights.join(' '),
     'segment-distances': segmentDistances.join(' ')
-  });
+  };
+  if (radius > 0) {
+    style['segment-radii'] = String(radius);
+    style['radius-type'] = 'arc-radius';
+  }
+  edge.style(style);
+};
+var supportsRoundSegments = function supportsRoundSegments(cy) {
+  var names = cy.style().propertyNames;
+  return Array.isArray(names) && names.indexOf('segment-radii') >= 0;
 };
 var makeGraph = function makeGraph(nodes, edges, options) {
   var elkNodes = [];
@@ -340,8 +394,8 @@ var makeGraph = function makeGraph(nodes, edges, options) {
     let parentTgt = e.target().parent();
     if ( false && parentSrc.nonempty() && parentTgt.nonempty() && parentSrc.same( parentTgt ) ){
       let kp = elkEleLookup[ parentSrc.id() ];
-        kp.edges = kp.edges || [];
-        kp.edges.push( k );
+       kp.edges = kp.edges || [];
+       kp.edges.push( k );
     } else {*/
     graph.edges.push(_k3);
     //}
@@ -378,6 +432,13 @@ var Layout = /*#__PURE__*/function () {
         });
         if (options.useElkEdgeGeometry) {
           var elkEdgeLookup = {};
+          var origins = getElkOrigins(graph);
+          // `round-segments` and `segment-radii` arrived together in Cytoscape
+          // 3.29. Older versions reject `curve-style: round-segments` as an
+          // invalid style, and the edge would then fall back to its stylesheet
+          // curve style and lose the route. So on older versions the radius is
+          // ignored and the route is drawn with `segments`.
+          var radius = supportsRoundSegments(options.cy) ? options.elkEdgeRadius || 0 : 0;
           for (var i = 0; i < graph.edges.length; i++) {
             elkEdgeLookup[graph.edges[i].id] = graph.edges[i];
           }
@@ -388,7 +449,8 @@ var Layout = /*#__PURE__*/function () {
             if (!elkEdge || !sourcePos || !targetPos) {
               return;
             }
-            applyElkEdgeGeometry(edge, elkEdge, sourcePos, targetPos);
+            var points = getElkEdgePoints(elkEdge, origins, graph.id);
+            applyElkEdgeGeometry(edge, points, sourcePos, targetPos, radius);
           });
         }
         nodes.filter(function (n) {

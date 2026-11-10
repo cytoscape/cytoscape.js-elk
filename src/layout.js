@@ -3,8 +3,6 @@ import assign from './assign';
 import defaults from './defaults';
 
 const elkOverrides = {};
-const minSegmentWeight = 0.01;
-const maxSegmentWeight = 0.99;
 
 const getPos = function (ele, options) {
   const dims = ele.layoutDimensions(options);
@@ -72,21 +70,52 @@ const makeEdge = function (edge /*, options*/) {
   return k;
 };
 
-const getElkEdgePoints = function (elkEdge) {
+// Absolute top-left origin of every ELK node, keyed by id. ELK child
+// coordinates are relative to the parent, so the walk sums them up.
+const getElkOrigins = function (graph) {
+  const origins = { [graph.id]: { x: 0, y: 0 } };
+
+  const walk = function (container, ox, oy) {
+    const children = container.children || [];
+
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
+      const x = ox + (child.x || 0);
+      const y = oy + (child.y || 0);
+
+      origins[child.id] = { x, y };
+
+      walk(child, x, y);
+    }
+  };
+
+  walk(graph, 0, 0);
+
+  return origins;
+};
+
+// ELK writes section coordinates relative to `elkEdge.container`, which is
+// the root unless both ends sit inside the same compound node.
+const getElkEdgePoints = function (elkEdge, origins, rootId) {
   const sec = elkEdge.sections && elkEdge.sections[0];
 
   if (!sec || !sec.startPoint || !sec.endPoint) {
     return [];
   }
 
-  const points = [sec.startPoint];
-  const bends = sec.bendPoints || [];
+  const container = elkEdge.container === undefined ? rootId : elkEdge.container;
+  const origin = origins[container] || { x: 0, y: 0 };
+  const raw = [sec.startPoint].concat(sec.bendPoints || [], [sec.endPoint]);
+  const points = [];
 
-  for (let i = 0; i < bends.length; i++) {
-    points.push(bends[i]);
+  for (let i = 0; i < raw.length; i++) {
+    const p = { x: raw[i].x + origin.x, y: raw[i].y + origin.y };
+    const last = points[points.length - 1];
+
+    if (!last || last.x !== p.x || last.y !== p.y) {
+      points.push(p);
+    }
   }
-
-  points.push(sec.endPoint);
 
   return points;
 };
@@ -117,9 +146,7 @@ const projectOntoLine = function (a, b, p) {
   };
 };
 
-const applyElkEdgeGeometry = function (edge, elkEdge, sourceCenter, targetCenter) {
-  const points = getElkEdgePoints(elkEdge);
-
+const applyElkEdgeGeometry = function (edge, points, sourceCenter, targetCenter, radius) {
   if (points.length < 2) {
     return;
   }
@@ -137,38 +164,61 @@ const applyElkEdgeGeometry = function (edge, elkEdge, sourceCenter, targetCenter
     endPoint.y - targetCenter.y
   );
 
-  if (bends.length === 0) {
-    edge.style({
-      'curve-style': 'segments',
-      'edge-distances': 'endpoints',
-      'source-endpoint': sourceEndpoint,
-      'target-endpoint': targetEndpoint,
-      'segment-weights': '0.5',
-      'segment-distances': '0',
-    });
-
-    return;
-  }
-
   const segmentWeights = [];
   const segmentDistances = [];
 
   for (let i = 0; i < bends.length; i++) {
     const proj = projectOntoLine(startPoint, endPoint, bends[i]);
-    const weight = Math.max(minSegmentWeight, Math.min(maxSegmentWeight, proj.w));
+    const weight = proj.w.toFixed(4);
+    const distance = proj.d.toFixed(2);
 
-    segmentWeights.push(weight.toFixed(4));
-    segmentDistances.push(proj.d.toFixed(2));
+    // Weights outside 0..1 are valid (placed beyond the start or end) and
+    // Cytoscape renders them correctly. We remove weights that would place a
+    // bend exactly at an endpoint, because shortenIntersection then fails and
+    // the edge is not drawn at all.
+    if (
+      (Number(weight) === 0 || Number(weight) === 1) &&
+      Number(distance) === 0
+    ) {
+      continue;
+    }
+
+    segmentWeights.push(weight);
+    segmentDistances.push(distance);
   }
 
-  edge.style({
-    'curve-style': 'segments',
+  if (segmentWeights.length === 0) {
+    edge.style({
+      'curve-style': 'straight',
+      'edge-distances': 'endpoints',
+      'source-endpoint': sourceEndpoint,
+      'target-endpoint': targetEndpoint,
+    });
+
+    return;
+  }
+
+  const style = {
+    'curve-style': radius > 0 ? 'round-segments' : 'segments',
     'edge-distances': 'endpoints',
     'source-endpoint': sourceEndpoint,
     'target-endpoint': targetEndpoint,
     'segment-weights': segmentWeights.join(' '),
     'segment-distances': segmentDistances.join(' '),
-  });
+  };
+
+  if (radius > 0) {
+    style['segment-radii'] = String(radius);
+    style['radius-type'] = 'arc-radius';
+  }
+
+  edge.style(style);
+};
+
+const supportsRoundSegments = function (cy) {
+  const names = cy.style().propertyNames;
+
+  return Array.isArray(names) && names.indexOf('segment-radii') >= 0;
 };
 
 const makeGraph = function (nodes, edges, options) {
@@ -282,6 +332,15 @@ class Layout {
 
         if (options.useElkEdgeGeometry) {
           const elkEdgeLookup = {};
+          const origins = getElkOrigins(graph);
+          // `round-segments` and `segment-radii` arrived together in Cytoscape
+          // 3.29. Older versions reject `curve-style: round-segments` as an
+          // invalid style, and the edge would then fall back to its stylesheet
+          // curve style and lose the route. So on older versions the radius is
+          // ignored and the route is drawn with `segments`.
+          const radius = supportsRoundSegments(options.cy)
+            ? options.elkEdgeRadius || 0
+            : 0;
 
           for (let i = 0; i < graph.edges.length; i++) {
             elkEdgeLookup[graph.edges[i].id] = graph.edges[i];
@@ -296,7 +355,9 @@ class Layout {
               return;
             }
 
-            applyElkEdgeGeometry(edge, elkEdge, sourcePos, targetPos);
+            const points = getElkEdgePoints(elkEdge, origins, graph.id);
+
+            applyElkEdgeGeometry(edge, points, sourcePos, targetPos, radius);
           });
         }
 

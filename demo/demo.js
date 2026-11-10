@@ -1,5 +1,6 @@
 const demos = [
   'box',
+  'compound',
   'demo',
   'disco',
   'force',

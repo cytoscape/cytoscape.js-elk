@@ -15,6 +15,7 @@ const defaults = {
   stop: undefined, // Callback on layoutstop
   nodeLayoutOptions: undefined, // Special options for only the nodes
   useElkEdgeGeometry: false, // Whether to apply ELK edge routes (sections) to Cytoscape segment geometry
+  elkEdgeRadius: 0, // Corner radius for ELK edge routes; above 0 uses round-segments (Cytoscape 3.29+, ignored on older versions)
   elk: {
     // Options to pass directly to ELK `layoutOptions`. The subsequent identifier has to be used as property key in quotes.
     // E.g. for 'org.eclipse.elk.direction' use:
