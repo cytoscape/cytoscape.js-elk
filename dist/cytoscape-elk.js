@@ -9,12 +9,13 @@
 		root["cytoscapeElk"] = factory(root["ELK"]);
 })(this, function(__WEBPACK_EXTERNAL_MODULE__883__) {
 return /******/ (function() { // webpackBootstrap
-/******/ 	"use strict";
+/******/ 	// runtime can't be in strict mode because 'output.globalObject' reads 'this'.
 /******/ 	var __webpack_modules__ = ({
 
 /***/ 883:
 /***/ (function(module) {
 
+"use strict";
 module.exports = __WEBPACK_EXTERNAL_MODULE__883__;
 
 /***/ })
@@ -47,36 +48,33 @@ module.exports = __WEBPACK_EXTERNAL_MODULE__883__;
 /******/ 	
 /************************************************************************/
 /******/ 	/* webpack/runtime/compat get default export */
-/******/ 	!function() {
-/******/ 		// getDefaultExport function for compatibility with non-harmony modules
-/******/ 		__webpack_require__.n = function(module) {
-/******/ 			var getter = module && module.__esModule ?
-/******/ 				function() { return module['default']; } :
-/******/ 				function() { return module; };
-/******/ 			__webpack_require__.d(getter, { a: getter });
-/******/ 			return getter;
-/******/ 		};
-/******/ 	}();
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function() { return module['default']; } :
+/******/ 			function() { return module; };
+/******/ 		__webpack_require__.d(getter, { a: getter });
+/******/ 		return getter;
+/******/ 	};
 /******/ 	
 /******/ 	/* webpack/runtime/define property getters */
-/******/ 	!function() {
-/******/ 		// define getter functions for harmony exports
-/******/ 		__webpack_require__.d = function(exports, definition) {
-/******/ 			for(var key in definition) {
-/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
-/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
-/******/ 				}
+/******/ 	// define getter/value functions for harmony exports
+/******/ 	__webpack_require__.d = function(exports, definition) {
+/******/ 		for(var key in definition) {
+/******/ 			if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 				Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
 /******/ 			}
-/******/ 		};
-/******/ 	}();
+/******/ 		}
+/******/ 	};
 /******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
-/******/ 	!function() {
-/******/ 		__webpack_require__.o = function(obj, prop) { return Object.prototype.hasOwnProperty.call(obj, prop); }
-/******/ 	}();
+/******/ 	__webpack_require__.o = function(obj, prop) { return Object.prototype.hasOwnProperty.call(obj, prop); };
 /******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
+// This entry needs to be wrapped in an IIFE because it needs to be in strict mode.
+!function() {
+"use strict";
 
 // EXPORTS
 __webpack_require__.d(__webpack_exports__, {
@@ -161,7 +159,7 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-
+;
 
 
 var elkOverrides = {};
@@ -291,6 +289,43 @@ var projectOntoLine = function projectOntoLine(a, b, p) {
     d: d
   };
 };
+
+// Keep the caller's inline styles so disabling routing exposes the stylesheet
+// again, rather than leaving the last ELK route attached to the edge.
+var clearElkEdgeStyle = function clearElkEdgeStyle(edge) {
+  var saved = edge.scratch('_elkEdgeStyle');
+  if (!saved) {
+    return;
+  }
+  Object.keys(saved.applied).forEach(function (name) {
+    // Preserve styles the caller has changed since this layout ran.
+    if (edge.style(name) === saved.applied[name]) {
+      edge.removeStyle(name);
+      if (saved.previous[name] !== undefined) {
+        edge.style(name, saved.previous[name]);
+      }
+    }
+  });
+  edge.removeScratch('_elkEdgeStyle');
+};
+var setElkEdgeStyle = function setElkEdgeStyle(edge, style) {
+  var previous = {};
+  Object.keys(style).forEach(function (name) {
+    var property = edge.pstyle(name);
+    if (property && property.bypass) {
+      previous[name] = property.strValue;
+    }
+  });
+  edge.style(style);
+  var applied = {};
+  Object.keys(style).forEach(function (name) {
+    applied[name] = edge.style(name);
+  });
+  edge.scratch('_elkEdgeStyle', {
+    previous: previous,
+    applied: applied
+  });
+};
 var applyElkEdgeGeometry = function applyElkEdgeGeometry(edge, points, sourceCenter, targetCenter, radius) {
   if (points.length < 2) {
     return;
@@ -319,7 +354,7 @@ var applyElkEdgeGeometry = function applyElkEdgeGeometry(edge, points, sourceCen
     segmentDistances.push(distance);
   }
   if (segmentWeights.length === 0) {
-    edge.style({
+    setElkEdgeStyle(edge, {
       'curve-style': 'straight',
       'edge-distances': 'endpoints',
       'source-endpoint': sourceEndpoint,
@@ -339,7 +374,7 @@ var applyElkEdgeGeometry = function applyElkEdgeGeometry(edge, points, sourceCen
     style['segment-radii'] = String(radius);
     style['radius-type'] = 'arc-radius';
   }
-  edge.style(style);
+  setElkEdgeStyle(edge, style);
 };
 var supportsRoundSegments = function supportsRoundSegments(cy) {
   var names = cy.style().propertyNames;
@@ -430,7 +465,11 @@ var Layout = /*#__PURE__*/function () {
         }).forEach(function (n) {
           nodePosLookup[n.id()] = getPos(n, options);
         });
-        if (options.useElkEdgeGeometry) {
+        var styleEnabled = options.cy.styleEnabled();
+        if (styleEnabled) {
+          edges.forEach(clearElkEdgeStyle);
+        }
+        if (options.useElkEdgeGeometry && styleEnabled) {
           var elkEdgeLookup = {};
           var origins = getElkOrigins(graph);
           // `round-segments` and `segment-radii` arrived together in Cytoscape
@@ -446,11 +485,22 @@ var Layout = /*#__PURE__*/function () {
             var elkEdge = elkEdgeLookup[edge.id()];
             var sourcePos = nodePosLookup[edge.source().id()];
             var targetPos = nodePosLookup[edge.target().id()];
-            if (!elkEdge || !sourcePos || !targetPos) {
+            if (edge.isLoop() || !elkEdge || !sourcePos || !targetPos) {
               return;
             }
-            var points = getElkEdgePoints(elkEdge, origins, graph.id);
-            applyElkEdgeGeometry(edge, points, sourcePos, targetPos, radius);
+            var rawPoints = getElkEdgePoints(elkEdge, origins, graph.id);
+            // Interior points use the source node as the transform context;
+            // the target endpoint uses the target node, like its center.
+            var transform = function transform(node, point) {
+              return options.transform ? options.transform(node, {
+                x: point.x,
+                y: point.y
+              }) : point;
+            };
+            var points = rawPoints.map(function (point, i) {
+              return transform(i === rawPoints.length - 1 ? edge.target() : edge.source(), point);
+            });
+            applyElkEdgeGeometry(edge, points, transform(edge.source(), sourcePos), transform(edge.target(), targetPos), radius);
           });
         }
         nodes.filter(function (n) {
@@ -491,6 +541,7 @@ if (typeof cytoscape !== 'undefined') {
   register(cytoscape);
 }
 /* harmony default export */ var src = (register);
+}();
 __webpack_exports__ = __webpack_exports__["default"];
 /******/ 	return __webpack_exports__;
 /******/ })()
