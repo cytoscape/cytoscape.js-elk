@@ -9,6 +9,8 @@
   "scripts": {
     "pages": "gh-pages -d demo",
     "postpublish": "run-s pages",
+    "pretest": "npm run build",
+    "test": "node --test test/*.js",
     "lint": "eslint src",
     "build": "webpack --mode=production",
     "watch": "webpack --progress --watch --mode=development",
@@ -31,6 +33,7 @@
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
     "babel-loader": "^8.0.0",
+    "cytoscape": "^3.33.4",
     "eslint": "^7.13.0",
     "eslint-config-prettier": "^6.15.0",
     "gh-pages": "^1.0.0",

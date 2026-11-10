@@ -146,6 +146,49 @@ const projectOntoLine = function (a, b, p) {
   };
 };
 
+// Keep the caller's inline styles so disabling routing exposes the stylesheet
+// again, rather than leaving the last ELK route attached to the edge.
+const clearElkEdgeStyle = function (edge) {
+  const saved = edge.scratch('_elkEdgeStyle');
+
+  if (!saved) {
+    return;
+  }
+
+  Object.keys(saved.applied).forEach((name) => {
+    // Preserve styles the caller has changed since this layout ran.
+    if (edge.style(name) === saved.applied[name]) {
+      edge.removeStyle(name);
+
+      if (saved.previous[name] !== undefined) {
+        edge.style(name, saved.previous[name]);
+      }
+    }
+  });
+  edge.removeScratch('_elkEdgeStyle');
+};
+
+const setElkEdgeStyle = function (edge, style) {
+  const previous = {};
+
+  Object.keys(style).forEach((name) => {
+    const property = edge.pstyle(name);
+
+    if (property && property.bypass) {
+      previous[name] = property.strValue;
+    }
+  });
+
+  edge.style(style);
+
+  const applied = {};
+  Object.keys(style).forEach((name) => {
+    applied[name] = edge.style(name);
+  });
+
+  edge.scratch('_elkEdgeStyle', { previous, applied });
+};
+
 const applyElkEdgeGeometry = function (edge, points, sourceCenter, targetCenter, radius) {
   if (points.length < 2) {
     return;
@@ -188,7 +231,7 @@ const applyElkEdgeGeometry = function (edge, points, sourceCenter, targetCenter,
   }
 
   if (segmentWeights.length === 0) {
-    edge.style({
+    setElkEdgeStyle(edge, {
       'curve-style': 'straight',
       'edge-distances': 'endpoints',
       'source-endpoint': sourceEndpoint,
@@ -212,7 +255,7 @@ const applyElkEdgeGeometry = function (edge, points, sourceCenter, targetCenter,
     style['radius-type'] = 'arc-radius';
   }
 
-  edge.style(style);
+  setElkEdgeStyle(edge, style);
 };
 
 const supportsRoundSegments = function (cy) {
@@ -330,7 +373,13 @@ class Layout {
             nodePosLookup[n.id()] = getPos(n, options);
           });
 
-        if (options.useElkEdgeGeometry) {
+        const styleEnabled = options.cy.styleEnabled();
+
+        if (styleEnabled) {
+          edges.forEach(clearElkEdgeStyle);
+        }
+
+        if (options.useElkEdgeGeometry && styleEnabled) {
           const elkEdgeLookup = {};
           const origins = getElkOrigins(graph);
           // `round-segments` and `segment-radii` arrived together in Cytoscape
@@ -351,13 +400,28 @@ class Layout {
             const sourcePos = nodePosLookup[edge.source().id()];
             const targetPos = nodePosLookup[edge.target().id()];
 
-            if (!elkEdge || !sourcePos || !targetPos) {
+            if (edge.isLoop() || !elkEdge || !sourcePos || !targetPos) {
               return;
             }
 
-            const points = getElkEdgePoints(elkEdge, origins, graph.id);
+            const rawPoints = getElkEdgePoints(elkEdge, origins, graph.id);
+            // Interior points use the source node as the transform context;
+            // the target endpoint uses the target node, like its center.
+            const transform = (node, point) => options.transform
+              ? options.transform(node, { x: point.x, y: point.y })
+              : point;
+            const points = rawPoints.map((point, i) => transform(
+              i === rawPoints.length - 1 ? edge.target() : edge.source(),
+              point
+            ));
 
-            applyElkEdgeGeometry(edge, points, sourcePos, targetPos, radius);
+            applyElkEdgeGeometry(
+              edge,
+              points,
+              transform(edge.source(), sourcePos),
+              transform(edge.target(), targetPos),
+              radius
+            );
           });
         }
 

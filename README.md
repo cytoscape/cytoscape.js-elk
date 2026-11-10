@@ -96,6 +96,12 @@ Note that edges will be distorted before Cytoscape 3.27 since `edge-distances: e
 
 Set `elkEdgeRadius` above 0 to round the bends (only works on Cytoscape 3.29+).
 
+Routes follow the layout's `transform` callback. Route interiors use the source
+node as the callback's node argument; the target endpoint uses the target node.
+Self-loops retain their existing curve style. Running ELK again with routing
+disabled, or with an algorithm that supplies no route, restores the previous
+edge styles.
+
 For compound graphs, edges that cross group borders will not be routed unless you also set `'elk.hierarchyHandling': 'INCLUDE_CHILDREN'`. See the [compound demo](https://cytoscape.github.io/cytoscape.js-elk/?demo=compound).
 
 ```js
@@ -131,7 +137,7 @@ See the [ELK.js documentation](https://github.com/OpenKieler/elkjs) and the [ELK
 
 ## Build targets
 
-* `npm run test` : Run Mocha tests in `./test`
+* `npm test` : Build and run the layout regression tests (Node.js 18+)
 * `npm run build` : Build `./src/**` into `cytoscape.js-elk`
 * `npm run watch` : Automatically build on changes with live reloading (N.b. you must already have an HTTP server running)
 * `npm run dev` : Automatically build on changes with live reloading with webpack dev server
