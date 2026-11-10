@@ -66,6 +66,7 @@ var options = {
   ready: undefined, // Callback on layoutready
   stop: undefined, // Callback on layoutstop
   nodeLayoutOptions: undefined, // Per-node options function
+  useElkEdgeGeometry: false, // Whether to apply ELK edge routes to Cytoscape segment geometry
   elk: {
     // All options are available at http://www.eclipse.org/elk/reference.html
     //
@@ -85,6 +86,21 @@ var options = {
 };
 
 cy.layout( options ).run();
+```
+
+If you want ELK to provide routed edge geometry (e.g. to separate parallel edges in layered layouts), set `useElkEdgeGeometry: true`.
+When enabled, ELK `sections` points are translated into Cytoscape `segments` control data per edge.
+
+```js
+var options = {
+  name: 'elk',
+  useElkEdgeGeometry: true,
+  elk: {
+    algorithm: 'layered',
+    'elk.direction': 'RIGHT',
+    'elk.edgeRouting': 'ORTHOGONAL',
+  },
+};
 ```
 
 You can set layout options per node by defining a `nodeLayoutOptions` function which is called on a per-node basis. This is useful for tweaking the layout of a particular node, like for [setting its partition](https://www.eclipse.org/elk/reference/options/org-eclipse-elk-partitioning-partition.html) for the layered layout.
